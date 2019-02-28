@@ -17,7 +17,7 @@ setup_git() {
 }
 
 prepare_prod() {
-	git clone https://${GH_TOKEN}@github.com:rteshnizi/tethered-pair.github.io.git prod
+	git clone https://${GH_TOKEN}@github.com/rteshnizi/tethered-pair.github.io.git prod
 	cd prod
 	ls -la
 	find ./ -mindepth 1 ! -regex '^.\/\.git\(\/.*\)?' -delete
