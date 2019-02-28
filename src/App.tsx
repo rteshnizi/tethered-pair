@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { BindMemberMethods } from './utils/react';
-import { Home } from './home/home';
+import { Home } from './viewer/viewer';
 
 interface AppState {
 	MenuIsOpen: boolean;
