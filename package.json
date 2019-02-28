@@ -1,12 +1,11 @@
 {
-	"name": "tethered-pair-dev",
+	"name": "tethered-pair",
 	"version": "0.1.0",
 	"private": true,
 	"dependencies": {
 		"@material-ui/core": "^3.9.2",
 		"react": "^16.8.1",
 		"react-dom": "^16.8.1",
-		"react-router-dom": "^4.3.1",
 		"react-scripts": "2.1.5",
 		"typescript": "3.3.3"
 	},
@@ -15,7 +14,6 @@
 		"@types/node": "11.9.3",
 		"@types/react": "16.8.3",
 		"@types/react-dom": "16.8.1",
-		"@types/react-router-dom": "^4.3.1",
 		"@typescript-eslint/eslint-plugin": "^1.4.0",
 		"@typescript-eslint/parser": "^1.4.0"
 	},
