@@ -1,5 +1,5 @@
 {
-	"name": "rteshnizi-dev",
+	"name": "tethered-pair-dev",
 	"version": "0.1.0",
 	"private": true,
 	"dependencies": {
@@ -26,9 +26,6 @@
 		"eject": "react-scripts eject",
 		"eslint": "eslint src/**/*.{ts,tsx}",
 		"lint": "npm run eslint"
-	},
-	"eslintConfig": {
-		"extends": "react-app"
 	},
 	"browserslist": [
 		">0.2%",
