@@ -13,7 +13,10 @@ code {
 .App {
 	background-color: #282c34;
 	color: #FFFFFF;
-	text-align: center;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-gap: 10px;
+	grid-auto-rows: minmax(100px, auto);
 }
 
 .header {
@@ -23,4 +26,5 @@ code {
 	align-items: center;
 	justify-content: center;
 	font-size: calc(10px + 2vmin);
+	text-align: center;
 }

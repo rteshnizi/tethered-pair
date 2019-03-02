@@ -14,7 +14,9 @@ export class InputArea extends React.Component<InputAreaProps, {}> {
 
 	render() {
 		return (
-			this.props.activeStep
+			<div>
+				Input Area
+			</div>
 		);
 	}
 }

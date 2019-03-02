@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { BindMemberMethods } from '../utils/react';
 
-export class Viewer extends React.Component {
+export class Header extends React.Component {
 	constructor(props: {}) {
 		super(props);
-		BindMemberMethods(Viewer.prototype, this);
+		BindMemberMethods(Header.prototype, this);
 	}
 
 	render() {
 		return (
-			<div>
-				Viewer
-			</div>
+		<header className="header">
+			<p> Tethered Pair App </p>
+		</header>
 		);
 	}
 }

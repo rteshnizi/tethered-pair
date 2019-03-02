@@ -5,6 +5,7 @@ import { BindMemberMethods } from './utils/react';
 import { Viewer } from './viewer/Viewer';
 import { InputArea } from './ui/InputArea';
 import Theme from './ui/Theme';
+import { Header } from './ui/header';
 
 export class AppSteps {
 	0 = "Initial Configuration";
@@ -49,16 +50,18 @@ class App extends React.Component<{}, AppState> {
 
 	render() {
 		return (
-			<React.Fragment>
+			<Mui.MuiThemeProvider theme={Theme}>
+				{this.getStepper()}
 				<div className="App">
-					<Mui.CssBaseline />
-					<Mui.MuiThemeProvider theme={Theme}>
-							{this.getStepper()}
-							<InputArea activeStep={this.state.activeStep} />
-							<Viewer />
-					</Mui.MuiThemeProvider>
+					<Header />
+					<div className="input-area-container">
+						<InputArea activeStep={this.state.activeStep} />
+					</div>
+					<div className="viewer-container">
+						<Viewer />
+					</div>
 				</div>
-			</React.Fragment>
+			</Mui.MuiThemeProvider>
 		);
 	}
 }
