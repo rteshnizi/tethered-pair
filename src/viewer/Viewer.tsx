@@ -9,7 +9,7 @@ export class Viewer extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<div className="viewer">
 				Viewer
 			</div>
 		);

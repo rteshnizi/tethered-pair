@@ -52,8 +52,8 @@ class App extends React.Component<{}, AppState> {
 		return (
 			<Mui.MuiThemeProvider theme={Theme}>
 				{this.getStepper()}
-				<div className="App">
-					<Header />
+				<Header />
+				<div className="app">
 					<div className="input-area-container">
 						<InputArea activeStep={this.state.activeStep} />
 					</div>
