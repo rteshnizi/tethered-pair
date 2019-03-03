@@ -1,6 +1,5 @@
 import * as Mui from '@material-ui/core';
 import RightArrowIcon from '@material-ui/icons/ArrowRightAlt';
-import EditIcon from '@material-ui/icons/Edit';
 import { fabric } from 'fabric';
 import * as React from 'react';
 import { AppSteps } from '../App';
