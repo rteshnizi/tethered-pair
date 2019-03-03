@@ -15,6 +15,7 @@ interface InputAreaProps {
 interface InputState {
 	r1: StrPoint;
 	r2: StrPoint;
+
 }
 
 export class InputArea extends React.Component<InputAreaProps, InputState> {
@@ -54,14 +55,14 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 					className="point-input"
 					label={`R${ind}.X`}
 					value={strR.x}
-					margin="normal"
+					margin="dense"
 					onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => { this.handleRobotChange(e.target.value, strR, true, ind); }}
 					/>
 				<Mui.TextField
 					className="point-input"
 					label={`R${ind}.Y`}
 					value={strR.y}
-					margin="normal"
+					margin="dense"
 					onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => { this.handleRobotChange(e.target.value, strR, false, ind); }}
 					/>
 				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { this.setRobot(strR, ind); }}>
@@ -71,11 +72,31 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		);
 	}
 
+	createRowsForAddedObstacles(): JSX.Element {
+		return (
+			<div>
+				HELLO
+			</div>
+		);
+	}
+
+	createObstacleInput(): JSX.Element {
+		return (
+			<div>
+				{this.createRowsForAddedObstacles()}
+				<Mui.Button variant="contained" color="primary" size="small">Create New Obstacle</Mui.Button>
+			</div>
+		);
+	}
+
 	render() {
 		return (
 			<div className="input-area">
+				<p>Robots</p>
 				{this.createRobotInput(this.state.r1, 1)}
 				{this.createRobotInput(this.state.r2, 2)}
+				<p>Obstacles</p>
+				{this.createObstacleInput()}
 			</div>
 		);
 	}
