@@ -1,19 +1,22 @@
-import { fabric } from "fabric";
 import { Robot } from "./robot";
 import { Entity } from "./entity";
 
-class Model {
-	public robot1: Robot;
-	public robot2: Robot;
-
-	constructor() {
-		this.robot1 = new Robot("R1", new fabric.Point(100, 50), "red");
-		this.robot2 = new Robot("R2", new fabric.Point(80, 250), "green");
+export default class Model {
+	private static _instance: Model;
+	public static get Instance() {
+		return Model._instance || (Model._instance = new Model());
 	}
 
-	public Robots(): Robot[] {
-		return [this.robot1, this.robot2];
+	private robots: { [index: number]: Robot };
+
+	private constructor() {
+		this.robots = {};
+	}
+
+	public setRobot(r: Robot, ind: 1 | 2): void {
+		if (this.robots[ind]) {
+			this.robots[ind].remove();
+		}
+		this.robots[ind] = r;
 	}
 }
-
-export default new Model();

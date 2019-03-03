@@ -46,8 +46,13 @@ code {
 	margin-left: 10px !important;
 }
 
+.inline-button {
+	vertical-align: bottom !important;
+}
+
 #viewer-canvas {
 	background-color: white;
-	height: 400px;
-	width: 100%;
+	/* fabricJs reads the height and width attributes and not the css */
+	/* height: 400px; */
+	/* width: 100%; */
 }

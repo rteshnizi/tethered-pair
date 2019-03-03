@@ -1,5 +1,5 @@
 import { fabric } from 'fabric';
-import rendererService from '../viewer/renderer-service';
+import Renderer from '../viewer/renderer-service';
 
 export abstract class Entity {
 	// private _center: fabric.Point;
@@ -28,8 +28,12 @@ export abstract class Entity {
 		// this._center = center;
 		this._shape = shape;
 		this.dirty = true;
-		rendererService.addEntity(this);
-		rendererService.render();
+		Renderer.Instance.addEntity(this);
+		Renderer.Instance.render();
+	}
+
+	public remove(): void {
+		Renderer.Instance.removeEntity(this);
 	}
 
 	public render(): void {

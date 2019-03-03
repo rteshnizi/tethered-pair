@@ -6,7 +6,6 @@ import { Viewer } from './viewer/Viewer';
 import { InputArea } from './ui/InputArea';
 import Theme from './ui/Theme';
 import { Header } from './ui/header';
-import rendererService from './viewer/renderer-service';
 
 export class AppSteps {
 	0 = "Initial Configuration";
@@ -50,9 +49,6 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	render() {
-		window.setTimeout(() => {
-			rendererService.render();
-		}, 1000);
 		return (
 			<Mui.MuiThemeProvider theme={Theme}>
 				{this.getStepper()}

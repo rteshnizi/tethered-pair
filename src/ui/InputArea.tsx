@@ -1,11 +1,13 @@
 import * as Mui from '@material-ui/core';
+import RightArrowIcon from '@material-ui/icons/ArrowRightAlt';
+import EditIcon from '@material-ui/icons/Edit';
 import { fabric } from 'fabric';
 import * as React from 'react';
 import { AppSteps } from '../App';
 import { BindMemberMethods } from '../utils/react';
 import { StrPoint } from './geometry';
 import { Robot } from '../model/robot';
-import modelService from '../model/model-service';
+import Model from '../model/model-service';
 
 interface InputAreaProps {
 	activeStep: keyof AppSteps;
@@ -26,37 +28,55 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		BindMemberMethods(InputArea.prototype, this);
 	}
 
-	setRobot(strR: StrPoint, robot: Robot): void {
-		// modelService.
+	setRobot(strR: StrPoint, ind: 1 | 2): void {
+		const center = new fabric.Point(Number(strR.x), Number(strR.y));
+		Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 1 ? "red" : "blue"), ind);
 	}
 
-	createRobotInput(strR: StrPoint, robot: Robot): JSX.Element {
+	handleRobotChange(val: string, strR: StrPoint, isX: boolean, ind: 1 | 2): void {
+		let obj = {};
+		if (isX) {
+			strR.x = val;
+		} else {
+			strR.y = val;
+		}
+		if (ind === 1) {
+			obj = { r1: strR };
+		} else {
+			obj = { r2: strR };
+		}
+		this.setState(obj);
+	}
+
+	createRobotInput(strR: StrPoint, ind: 1 | 2): JSX.Element {
 		return (
 			<div>
 				<Mui.TextField
 					className="point-input"
-					label={`${robot.name}.X`}
+					label={`R${ind}.X`}
 					value={strR.x}
-					onChange={() => { this.setRobot(strR, robot); }}
 					margin="normal"
+					onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => { this.handleRobotChange(e.target.value, strR, true, ind); }}
 					/>
 				<Mui.TextField
 					className="point-input"
-					label={`${robot.name}.Y`}
+					label={`R${ind}.Y`}
 					value={strR.y}
-					onChange={() => { this.setRobot(strR, robot); }}
 					margin="normal"
+					onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => { this.handleRobotChange(e.target.value, strR, false, ind); }}
 					/>
+				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { this.setRobot(strR, ind); }}>
+					<RightArrowIcon fontSize="small" />
+				</Mui.IconButton>
 			</div>
 		);
 	}
 
 	render() {
-		console.log(this.state.r1);
 		return (
 			<div className="input-area">
-				{this.createRobotInput(this.state.r1, modelService.Robots()[0])}
-				{this.createRobotInput(this.state.r2, modelService.Robots()[1])}
+				{this.createRobotInput(this.state.r1, 1)}
+				{this.createRobotInput(this.state.r2, 2)}
 			</div>
 		);
 	}
