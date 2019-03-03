@@ -39,3 +39,15 @@ code {
 	border-width: 1px;
 	border-color: green;
 }
+
+.point-input {
+	width: 125px;
+	/* We need to use important because MUi uses inline styles */
+	margin-left: 10px !important;
+}
+
+#viewer-canvas {
+	background-color: white;
+	height: 400px;
+	width: 100%;
+}
