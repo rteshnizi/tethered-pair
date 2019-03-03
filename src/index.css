@@ -1,4 +1,6 @@
 body {
+	background-color: #282c34;
+	color: #FFFFFF;
 	margin: 0;
 	padding: 0;
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -10,21 +12,47 @@ code {
 	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.App {
-	background-color: #282c34;
-	color: #FFFFFF;
+.app {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(2, 1fr);
 	grid-gap: 10px;
-	grid-auto-rows: minmax(100px, auto);
+	grid-auto-rows: auto;
 }
 
 .header {
-	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	font-size: calc(10px + 2vmin);
 	text-align: center;
+}
+
+.viewer-container {
+	border-style: solid;
+	border-width: 1px;
+	border-color: brown;
+}
+
+.input-area-container {
+	border-style: solid;
+	border-width: 1px;
+	border-color: green;
+}
+
+.point-input {
+	width: 125px;
+	/* We need to use important because MUi uses inline styles */
+	margin-left: 10px !important;
+}
+
+.inline-button {
+	vertical-align: bottom !important;
+}
+
+#viewer-canvas {
+	background-color: white;
+	/* fabricJs reads the height and width attributes and not the css */
+	/* height: 400px; */
+	/* width: 100%; */
 }
