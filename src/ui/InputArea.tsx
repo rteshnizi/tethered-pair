@@ -72,7 +72,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 
 	updatePointInObstacle(val: string, obsInd: number, verInd: number): void {
 		const currentObs = this.state.obstacles;
-		currentObs[obsInd].push("0, 0");
+		currentObs[obsInd][verInd] = val;
 		this.setState({ obstacles: currentObs });
 	}
 
