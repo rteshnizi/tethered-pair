@@ -35,4 +35,11 @@ export default class Model {
 		}
 		this.obstacles[ind] = o;
 	}
+
+	public removeObstacle(ind: number): void {
+		if (this.obstacles[ind]) {
+			this.obstacles[ind].remove();
+			delete this.obstacles[ind];
+		}
+	}
 }

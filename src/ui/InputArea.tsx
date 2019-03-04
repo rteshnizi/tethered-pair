@@ -170,7 +170,14 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 	createObstaclePointInputs(obstacle: string[], obsInd: number): JSX.Element {
 		return (
 			<div key={`div-O-${obsInd}`}>
-				<p>{`Obstacle${obsInd + 1}`}</p>
+				<p>
+					{`Obstacle ${obsInd + 1}`}
+					<Mui.Tooltip title="Remove Obstacle" placement="top">
+						<Mui.IconButton aria-label="Toggle password visibility" onClick={() => { this.removeObstacle(obsInd) }}>
+							<RemoveIcon fontSize="small" />
+						</Mui.IconButton>
+					</Mui.Tooltip>
+				</p>
 				{obstacle.map((val: string, vertInd: number) => (
 					<Mui.Tooltip key={`O${obsInd}-${vertInd}`} title="Comma separated X, Y" placement="top">
 						<Mui.TextField
@@ -183,9 +190,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 								endAdornment: (
 								<Mui.InputAdornment position="end">
 									<Mui.Tooltip title="Remove Vertex" placement="bottom">
-										<Mui.IconButton
-										aria-label="Toggle password visibility"
-										onClick={() => { this.removePointFromObstacle(obsInd, vertInd) }}>
+										<Mui.IconButton aria-label="Toggle password visibility" onClick={() => { this.removePointFromObstacle(obsInd, vertInd) }}>
 											<RemoveIcon fontSize="small" />
 										</Mui.IconButton>
 									</Mui.Tooltip>
@@ -213,17 +218,24 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		);
 	}
 
-	addObstacleToState(): void {
+	addObstacle(): void {
 		const currentObs = this.state.obstacles;
 		currentObs.push(["0, 0", "0, 0", "0, 0"]); // min obstacle is triangle, we only work with polygonal obstacles
 		this.setState({ obstacles: currentObs });
+	}
+
+	removeObstacle(ind: number): void {
+		const currentObs = this.state.obstacles;
+		currentObs.splice(ind, 1);
+		this.setState({ obstacles: currentObs });
+		Model.Instance.removeObstacle(ind);
 	}
 
 	createObstacleInput(): JSX.Element {
 		return (
 			<div>
 				{this.createRowsForAddedObstacles()}
-				<Mui.Button variant="contained" color="primary" size="small" onClick={this.addObstacleToState}>Create New Obstacle</Mui.Button>
+				<Mui.Button variant="contained" color="primary" size="small" onClick={this.addObstacle}>Create New Obstacle</Mui.Button>
 			</div>
 		);
 	}
