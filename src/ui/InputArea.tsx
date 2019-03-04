@@ -17,11 +17,13 @@ interface InputAreaProps {
 class InputState {
 	public robots: string[];
 	public obstacles: string[][];
+	public cableLength: string;
 	public jsonState: string;
 
 	constructor() {
 		this.robots = ["0, 0", "0, 0"];
 		this.obstacles = [];
+		this.cableLength = "0";
 		this.jsonState = "";
 	}
 }
@@ -34,13 +36,17 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 	}
 
 	parseJson(): void {
-		let partialState: Pick<InputState, "robots" | "obstacles">;
+		let partialState: Pick<InputState, "robots" | "obstacles" | "cableLength">;
 		partialState = JSON.parse(this.state.jsonState);
 		this.setState(partialState);
 	}
 
 	exportCurrentAsJson(): void {
-		const selectedState = { robots: this.state.robots, obstacle: this.state.obstacles };
+		const selectedState = {
+			robots: this.state.robots,
+			obstacle: this.state.obstacles,
+			cableLength: Number(this.state.cableLength),
+		};
 		const jsonState = JSON.stringify(selectedState);
 		this.setState({ jsonState });
 	}
@@ -63,6 +69,27 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 					Get Map as JSON
 				</Mui.Button>
 			</div>
+		);
+	}
+
+	updateCableLength(val: string): void {
+		const l = Number(val);
+		if (!isNaN(l)) {
+			Model.Instance.cableLength = l;
+		}
+		this.setState({ cableLength: val })
+	}
+
+	createCableLengthInput(): JSX.Element {
+		return (
+			<Mui.TextField
+				className="point-input"
+				label="Cable Length"
+				value={this.state.cableLength}
+				margin="dense"
+				inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
+				onChange={(e) => { this.updateCableLength(e.target.value) }}
+				/>
 		);
 	}
 
@@ -186,6 +213,8 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 			<div className="input-area">
 				<p>Import/Export</p>
 				{this.getJsonTextArea()}
+				<p>Cable Length</p>
+				{this.createCableLengthInput()}
 				<p>Robots</p>
 				{this.createRobotInput(1)}
 				{this.createRobotInput(2)}

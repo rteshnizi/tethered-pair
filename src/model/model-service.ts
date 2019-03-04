@@ -11,11 +11,14 @@ export default class Model {
 
 	private robots: { [index: number]: Robot };
 	private obstacles: { [index: number]: Obstacle };
+	private _cableLength: number;
+	public set cableLength(l: number) { this._cableLength = l; }
 	private cable: Vertex[];
 
 	private constructor() {
 		this.robots = {};
 		this.obstacles = {};
+		this._cableLength = 0;
 		this.cable = [];
 	}
 
