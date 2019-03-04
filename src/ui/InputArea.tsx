@@ -7,6 +7,8 @@ import { BindMemberMethods } from '../utils/react';
 import { Robot } from '../model/robot';
 import Model from '../model/model-service';
 import { trim } from 'lodash';
+import { Obstacle } from '../model/obstacle';
+import { SortPointsClockwise } from '../utils/geometry';
 
 interface InputAreaProps {
 	activeStep: keyof AppSteps;
@@ -15,10 +17,12 @@ interface InputAreaProps {
 class InputState {
 	public robots: string[];
 	public obstacles: string[][];
+	public jsonState: string;
 
 	constructor() {
 		this.robots = ["0, 0", "0, 0"];
 		this.obstacles = [];
+		this.jsonState = "";
 	}
 }
 
@@ -29,14 +33,53 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		BindMemberMethods(InputArea.prototype, this);
 	}
 
-	setRobot(ind: 1 | 2): void {
-		const parts = this.state.robots[ind - 1].split(",");
-		if (parts.length < 2) return;
+	parseJson(): void {
+		let partialState: Pick<InputState, "robots" | "obstacles">;
+		partialState = JSON.parse(this.state.jsonState);
+		this.setState(partialState);
+	}
+
+	exportCurrentAsJson(): void {
+		const selectedState = { robots: this.state.robots, obstacle: this.state.obstacles };
+		const jsonState = JSON.stringify(selectedState);
+		this.setState({ jsonState });
+	}
+
+	getJsonTextArea(): JSX.Element {
+		return (
+			<div>
+				<Mui.TextField
+					multiline={true}
+					rowsMax={5}
+					value={this.state.jsonState}
+					inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace", fontSize: 12}}}
+					style={{width:"100%"}}
+					onChange={(e) => { this.setState({ jsonState: e.target.value }) }}
+					/>
+				<Mui.Button size="small" variant="contained" color="primary" aria-label="Parse" onClick={this.parseJson}>
+					Parse JSON
+				</Mui.Button>
+				<Mui.Button size="small" variant="contained" color="primary" aria-label="Export" onClick={this.exportCurrentAsJson}>
+					Get Map as JSON
+				</Mui.Button>
+			</div>
+		);
+	}
+
+	createFabricPoint(val: string): fabric.Point | null {
+		const parts = val.split(",");
+		if (parts.length < 2) return null;
 		const x = Number(trim(parts[0]));
 		const y = Number(trim(parts[1]));
-		if (isNaN(x) || isNaN(y)) return;
-		const center = new fabric.Point(x, y);
-		Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 1 ? "red" : "blue"), ind);
+		if (isNaN(x) || isNaN(y)) return null;
+		return new fabric.Point(x, y);
+	}
+
+	setRobot(ind: 1 | 2): void {
+		const center = this.createFabricPoint(this.state.robots[ind - 1]);
+		if (center) {
+			Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 1 ? "red" : "blue"), ind);
+		}
 	}
 
 	handleRobotChange(val: string, ind: 1 | 2): void {
@@ -54,6 +97,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 						label={`Robot ${ind}`}
 						value={this.state.robots[ind - 1]}
 						margin="dense"
+						inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
 						onChange={(e) => { this.handleRobotChange(e.target.value, ind); }}
 						/>
 				</Mui.Tooltip>
@@ -62,6 +106,18 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 				</Mui.IconButton>
 			</div>
 		);
+	}
+
+	setObstacle(ind: number): void {
+		const verts: fabric.Point[] = [];
+		this.state.obstacles[ind].forEach((vertStr) => {
+			const vert = this.createFabricPoint(vertStr);
+			if (vert) {
+				verts.push(vert);
+			}
+		});
+		SortPointsClockwise(verts);
+		Model.Instance.setObstacle(new Obstacle(`O${ind}`, verts), ind);
 	}
 
 	addPointToObstacle(obsInd: number): void {
@@ -87,6 +143,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 							label={`V${vertInd + 1}`}
 							value={val}
 							margin="dense"
+							inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
 							onChange={(e) => { this.updatePointInObstacle(e.target.value, obsInd, vertInd) }}
 							/>
 					</Mui.Tooltip>
@@ -94,7 +151,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 				<Mui.Button className="inline-button" color="primary" aria-label="Add Vertex" onClick={() => { this.addPointToObstacle(obsInd) }}>
 					Add Vertex
 				</Mui.Button>
-				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { }}>
+				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { this.setObstacle(obsInd) }}>
 					<RightArrowIcon fontSize="small" />
 				</Mui.IconButton>
 			</div>
@@ -127,6 +184,8 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 	render() {
 		return (
 			<div className="input-area">
+				<p>Import/Export</p>
+				{this.getJsonTextArea()}
 				<p>Robots</p>
 				{this.createRobotInput(1)}
 				{this.createRobotInput(2)}
