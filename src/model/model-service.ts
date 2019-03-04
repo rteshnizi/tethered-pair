@@ -1,6 +1,7 @@
-import { Robot } from "./robot";
 import { Entity } from "./entity";
 import { Obstacle } from "./obstacle";
+import { Robot } from "./robot";
+import { Vertex } from "./vertex";
 
 export default class Model {
 	private static _instance: Model;
@@ -10,10 +11,12 @@ export default class Model {
 
 	private robots: { [index: number]: Robot };
 	private obstacles: { [index: number]: Obstacle };
+	private cable: Vertex[];
 
 	private constructor() {
 		this.robots = {};
 		this.obstacles = {};
+		this.cable = [];
 	}
 
 	public setRobot(r: Robot, ind: 1 | 2): void {
