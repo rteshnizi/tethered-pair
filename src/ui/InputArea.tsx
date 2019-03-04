@@ -134,10 +134,10 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 
 	createObstaclePointInputs(obstacle: string[], obsInd: number): JSX.Element {
 		return (
-			<div>
+			<div key={`div-O-${obsInd}`}>
 				<p>{`Obstacle${obsInd + 1}`}</p>
 				{obstacle.map((val: string, vertInd: number) => (
-					<Mui.Tooltip title="Comma separated X, Y" placement="top">
+					<Mui.Tooltip key={`O${obsInd}-${vertInd}`} title="Comma separated X, Y" placement="top">
 						<Mui.TextField
 							className="point-input"
 							label={`V${vertInd + 1}`}
