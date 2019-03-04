@@ -28,9 +28,9 @@ export class Viewer extends React.Component<{}, ViewerState> {
 				width = el.clientWidth;
 				height = el.clientHeight;
 				this.setState({ width, height });
-				window.setTimeout(() => { Renderer.Instance.render(); }, 10);
+				window.setTimeout(() => { Renderer.Instance.render(); }, 200);
 			}
-		}, 250);
+		}, 500);
 	}
 
 	render() {

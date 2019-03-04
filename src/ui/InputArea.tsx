@@ -10,6 +10,7 @@ import Model from '../model/model-service';
 import { trim } from 'lodash';
 import { Obstacle } from '../model/obstacle';
 import { SortPointsClockwise } from '../utils/geometry';
+import { AllPresets } from '../model/presets';
 
 interface InputAreaProps {
 	activeStep: keyof AppSteps;
@@ -39,17 +40,40 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 	parseJson(): void {
 		let partialState: Pick<InputState, "robots" | "obstacles" | "cableLength">;
 		partialState = JSON.parse(this.state.jsonState);
+		this.state.obstacles.forEach((obs, ind) => { Model.Instance.removeObstacle(ind); });
 		this.setState(partialState);
+		window.setTimeout(() => {
+			Object.keys(partialState.robots).forEach((ind) => { this.setRobot(Number(ind) as 0 | 1) });
+			Object.keys(partialState.obstacles).forEach((ind) => { this.setObstacle(Number(ind)) });
+		}, 500);
 	}
 
 	exportCurrentAsJson(): void {
 		const selectedState = {
 			robots: this.state.robots,
-			obstacle: this.state.obstacles,
+			obstacles: this.state.obstacles,
 			cableLength: Number(this.state.cableLength),
 		};
 		const jsonState = JSON.stringify(selectedState);
 		this.setState({ jsonState });
+	}
+
+	getPresetSelector(): JSX.Element {
+		return(
+			<Mui.FormControl>
+				<Mui.InputLabel htmlFor="preset-select">Presets</Mui.InputLabel>
+				<Mui.Select
+					value={this.state.jsonState}
+					className="preset-select"
+					inputProps={{ name: 'preset', id: 'preset-select' }}
+					onChange={(e) => { this.setState({ jsonState: e.target.value }); }}
+				>
+					{
+						AllPresets.map((preset, ind) => <Mui.MenuItem key={`sel-item-${ind}`} value={preset.json}>{preset.name}</Mui.MenuItem>)
+					}
+				</Mui.Select>
+			</Mui.FormControl>
+		);
 	}
 
 	getJsonTextArea(): JSX.Element {
@@ -63,12 +87,13 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 					style={{width:"100%"}}
 					onChange={(e) => { this.setState({ jsonState: e.target.value }) }}
 					/>
-				<Mui.Button size="small" variant="contained" color="primary" aria-label="Parse" onClick={this.parseJson}>
+				<Mui.Button className="json-form-button" size="small" variant="contained" color="primary" aria-label="Parse" onClick={this.parseJson}>
 					Parse JSON
 				</Mui.Button>
-				<Mui.Button size="small" variant="contained" color="primary" aria-label="Export" onClick={this.exportCurrentAsJson}>
+				<Mui.Button className="json-form-button" size="small" variant="contained" color="primary" aria-label="Export" onClick={this.exportCurrentAsJson}>
 					Get Map as JSON
 				</Mui.Button>
+				{this.getPresetSelector()}
 			</div>
 		);
 	}
@@ -103,28 +128,28 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		return new fabric.Point(x, y);
 	}
 
-	setRobot(ind: 1 | 2): void {
-		const center = this.createFabricPoint(this.state.robots[ind - 1]);
+	setRobot(ind: 0 | 1): void {
+		const center = this.createFabricPoint(this.state.robots[ind]);
 		if (center) {
-			Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 1 ? "red" : "blue"), ind);
+			Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 0 ? "red" : "blue"), ind);
 		}
 	}
 
-	handleRobotChange(val: string, ind: 1 | 2): void {
+	handleRobotChange(val: string, ind: 0 | 1): void {
 		const currentRobots = this.state.robots;
-		currentRobots[ind - 1] = val;
+		currentRobots[ind] = val;
 		this.setState({ robots: currentRobots });
 		this.setRobot(ind);
 	}
 
-	createRobotInput(ind: 1 | 2): JSX.Element {
+	createRobotInput(ind: 0 | 1): JSX.Element {
 		return (
 			<div>
 				<Mui.Tooltip title="Comma separated X, Y" placement="top">
 					<Mui.TextField
 						className="point-input"
-						label={`Robot ${ind}`}
-						value={this.state.robots[ind - 1]}
+						label={`Robot ${ind + 1}`}
+						value={this.state.robots[ind]}
 						margin="dense"
 						inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
 						onChange={(e) => { this.handleRobotChange(e.target.value, ind); }}
@@ -248,8 +273,8 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 				<p>Cable Length</p>
 				{this.createCableLengthInput()}
 				<p>Robots</p>
+				{this.createRobotInput(0)}
 				{this.createRobotInput(1)}
-				{this.createRobotInput(2)}
 				<p>Obstacles</p>
 				{this.createObstacleInput()}
 			</div>

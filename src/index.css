@@ -56,3 +56,11 @@ code {
 	/* height: 400px; */
 	/* width: 100%; */
 }
+
+.json-form-button {
+	margin: 5px 5px !important;
+}
+
+.preset-select {
+	min-width: 100px !important;
+}

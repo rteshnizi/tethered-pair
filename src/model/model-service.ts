@@ -22,7 +22,7 @@ export default class Model {
 		this.cable = [];
 	}
 
-	public setRobot(r: Robot, ind: 1 | 2): void {
+	public setRobot(r: Robot, ind: 0 | 1): void {
 		if (this.robots[ind]) {
 			this.robots[ind].remove();
 		}
