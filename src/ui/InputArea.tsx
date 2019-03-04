@@ -1,5 +1,6 @@
 import * as Mui from '@material-ui/core';
-import RightArrowIcon from '@material-ui/icons/ArrowRightAlt';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Clear';
 import { fabric } from 'fabric';
 import * as React from 'react';
 import { AppSteps } from '../App';
@@ -113,6 +114,7 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		const currentRobots = this.state.robots;
 		currentRobots[ind - 1] = val;
 		this.setState({ robots: currentRobots });
+		this.setRobot(ind);
 	}
 
 	createRobotInput(ind: 1 | 2): JSX.Element {
@@ -128,9 +130,6 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 						onChange={(e) => { this.handleRobotChange(e.target.value, ind); }}
 						/>
 				</Mui.Tooltip>
-				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { this.setRobot(ind); }}>
-					<RightArrowIcon fontSize="small" />
-				</Mui.IconButton>
 			</div>
 		);
 	}
@@ -151,12 +150,21 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 		const currentObs = this.state.obstacles;
 		currentObs[obsInd].push("0, 0");
 		this.setState({ obstacles: currentObs });
+		this.setObstacle(obsInd)
 	}
 
 	updatePointInObstacle(val: string, obsInd: number, verInd: number): void {
 		const currentObs = this.state.obstacles;
 		currentObs[obsInd][verInd] = val;
 		this.setState({ obstacles: currentObs });
+		this.setObstacle(obsInd)
+	}
+
+	removePointFromObstacle(obsInd: number, verInd: number): void {
+		const currentObs = this.state.obstacles;
+		currentObs[obsInd].splice(verInd, 1);
+		this.setState({ obstacles: currentObs });
+		this.setObstacle(obsInd)
 	}
 
 	createObstaclePointInputs(obstacle: string[], obsInd: number): JSX.Element {
@@ -171,16 +179,28 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 							value={val}
 							margin="dense"
 							inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
+							InputProps={vertInd > 2 ? {
+								endAdornment: (
+								<Mui.InputAdornment position="end">
+									<Mui.Tooltip title="Remove Vertex" placement="bottom">
+										<Mui.IconButton
+										aria-label="Toggle password visibility"
+										onClick={() => { this.removePointFromObstacle(obsInd, vertInd) }}>
+											<RemoveIcon fontSize="small" />
+										</Mui.IconButton>
+									</Mui.Tooltip>
+								</Mui.InputAdornment>
+								)
+							} : {}}
 							onChange={(e) => { this.updatePointInObstacle(e.target.value, obsInd, vertInd) }}
 							/>
 					</Mui.Tooltip>
 				))}
-				<Mui.Button className="inline-button" color="primary" aria-label="Add Vertex" onClick={() => { this.addPointToObstacle(obsInd) }}>
-					Add Vertex
-				</Mui.Button>
-				<Mui.IconButton className="inline-button" color="primary" aria-label="Add" onClick={() => { this.setObstacle(obsInd) }}>
-					<RightArrowIcon fontSize="small" />
-				</Mui.IconButton>
+				<Mui.Tooltip title="Add Vertex" placement="top">
+					<Mui.IconButton className="inline-button" color="primary" aria-label="Add Vertex" onClick={() => { this.addPointToObstacle(obsInd) }}>
+						<AddIcon fontSize="small" />
+					</Mui.IconButton>
+				</Mui.Tooltip>
 			</div>
 		);
 	}
