@@ -87,10 +87,10 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 					style={{width:"100%"}}
 					onChange={(e) => { this.setState({ jsonState: e.target.value }) }}
 					/>
-				<Mui.Button className="json-form-button" size="small" variant="contained" color="primary" aria-label="Parse" onClick={this.parseJson}>
+				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Parse" onClick={this.parseJson}>
 					Parse JSON
 				</Mui.Button>
-				<Mui.Button className="json-form-button" size="small" variant="contained" color="primary" aria-label="Export" onClick={this.exportCurrentAsJson}>
+				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Export" onClick={this.exportCurrentAsJson}>
 					Get Map as JSON
 				</Mui.Button>
 				{this.getPresetSelector()}

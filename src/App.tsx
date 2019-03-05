@@ -28,7 +28,20 @@ class App extends React.Component<{}, AppState> {
 		BindMemberMethods(App.prototype, this);
 	}
 
-	handleStepClick(activeStep: keyof AppSteps) {
+	nextStep(): void {
+		switch (this.state.activeStep) {
+			case 0:
+				this.setState({ activeStep: 1 })
+				break;
+			case 1:
+				this.setState({ activeStep: 2 })
+				break;
+			default:
+				break;
+		}
+	}
+
+	handleStepClick(activeStep: keyof AppSteps): void {
 		this.setState({ activeStep });
 	}
 
@@ -51,8 +64,13 @@ class App extends React.Component<{}, AppState> {
 	render() {
 		return (
 			<Mui.MuiThemeProvider theme={Theme}>
-				{this.getStepper()}
 				<Header />
+				{this.getStepper()}
+				<div>
+				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Next Step" disabled={this.state.activeStep === 2} onClick={this.nextStep}>
+					Next Step
+				</Mui.Button>
+				</div>
 				<div className="app">
 					<div className="input-area-container">
 						<InputArea activeStep={this.state.activeStep} />
