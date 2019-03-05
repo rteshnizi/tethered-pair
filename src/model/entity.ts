@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
 import Renderer from '../viewer/renderer-service';
+import { DisableFabricJsMouseEvents } from '../utils/fabric';
 
 export abstract class Entity {
 	// private _center: fabric.Point;
@@ -27,6 +28,7 @@ export abstract class Entity {
 	constructor(public name: string, shape: fabric.Object) {
 		// this._center = center;
 		this._shape = shape;
+		DisableFabricJsMouseEvents(this._shape);
 		this.dirty = true;
 		Renderer.Instance.addEntity(this);
 		Renderer.Instance.render();
