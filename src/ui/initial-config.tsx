@@ -246,7 +246,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 		return (
 			<div>
 				{this.createRowsForAddedObstacles()}
-				<Mui.Button variant="contained" color="primary" size="small" onClick={this.addObstacle}>Create New Obstacle</Mui.Button>
+				<Mui.Button className="button-with-margin" variant="contained" color="primary" size="small" onClick={this.addObstacle}>Create New Obstacle</Mui.Button>
 			</div>
 		);
 	}
