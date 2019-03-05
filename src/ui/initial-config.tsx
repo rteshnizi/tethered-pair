@@ -6,10 +6,10 @@ import * as React from 'react';
 import { BindMemberMethods } from '../utils/react';
 import { Robot } from '../model/robot';
 import Model from '../model/model-service';
-import { trim } from 'lodash';
 import { Obstacle } from '../model/obstacle';
 import { SortPointsClockwise } from '../utils/geometry';
 import { AllPresets } from '../model/presets';
+import { CreateFabricPoint } from '../utils/fabric';
 
 class InputState {
 	public robots: string[];
@@ -114,17 +114,8 @@ export class InitialConfig extends React.Component<{}, InputState> {
 		);
 	}
 
-	createFabricPoint(val: string): fabric.Point | null {
-		const parts = val.split(",");
-		if (parts.length < 2) return null;
-		const x = Number(trim(parts[0]));
-		const y = Number(trim(parts[1]));
-		if (isNaN(x) || isNaN(y)) return null;
-		return new fabric.Point(x, y);
-	}
-
 	setRobot(ind: 0 | 1): void {
-		const center = this.createFabricPoint(this.state.robots[ind]);
+		const center = CreateFabricPoint(this.state.robots[ind]);
 		if (center) {
 			Model.Instance.setRobot(new Robot(`R${ind}`, center, ind === 0 ? "red" : "blue"), ind);
 		}
@@ -157,7 +148,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 	setObstacle(ind: number): void {
 		const verts: fabric.Point[] = [];
 		this.state.obstacles[ind].forEach((vertStr) => {
-			const vert = this.createFabricPoint(vertStr);
+			const vert = CreateFabricPoint(vertStr);
 			if (vert) {
 				verts.push(vert);
 			}

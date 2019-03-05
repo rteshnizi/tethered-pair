@@ -2,6 +2,7 @@ import { Entity } from "./entity";
 import { Obstacle } from "./obstacle";
 import { Robot } from "./robot";
 import { Vertex } from "./vertex";
+import { Destination } from "./destination";
 
 export default class Model {
 	private static _instance: Model;
@@ -10,6 +11,7 @@ export default class Model {
 	}
 
 	private robots: { [index: number]: Robot };
+	private destinations: { [index: number]: Destination };
 	private obstacles: { [index: number]: Obstacle };
 	private _cableLength: number;
 	public set cableLength(l: number) { this._cableLength = l; }
@@ -17,6 +19,7 @@ export default class Model {
 
 	private constructor() {
 		this.robots = {};
+		this.destinations = {};
 		this.obstacles = {};
 		this._cableLength = 0;
 		this.cable = [];
@@ -27,6 +30,13 @@ export default class Model {
 			this.robots[ind].remove();
 		}
 		this.robots[ind] = r;
+	}
+
+	public setDestination(d: Destination, ind: 0 | 1): void {
+		if (this.destinations[ind]) {
+			this.destinations[ind].remove();
+		}
+		this.destinations[ind] = d;
 	}
 
 	public setObstacle(o: Obstacle, ind: number): void {
