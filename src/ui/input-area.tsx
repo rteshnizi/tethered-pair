@@ -2,6 +2,7 @@ import * as React from 'react';
 import { AppSteps } from '../App';
 import { BindMemberMethods } from '../utils/react';
 import { InitialConfig } from './initial-config';
+import { DestinationPicker } from './destination-picker';
 
 interface InputAreaProps {
 	activeStep: keyof AppSteps;
@@ -20,9 +21,9 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 	getForm(): JSX.Element {
 		switch (this.props.activeStep) {
 			case 0:
-				return <InitialConfig />
+				return <InitialConfig />;
 			case 1:
-				return <div>Pick Destination</div>
+				return <DestinationPicker />;
 			default:
 				return <div>Simulating</div>
 		}
