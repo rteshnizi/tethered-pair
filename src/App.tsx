@@ -45,6 +45,10 @@ class App extends React.Component<{}, AppState> {
 		this.setState({ activeStep });
 	}
 
+	simulate(): void {
+		// Simulate Algorithm
+	}
+
 	getStepper(): JSX.Element {
 		return (
 			<Mui.Stepper activeStep={this.state.activeStep}>
@@ -61,16 +65,22 @@ class App extends React.Component<{}, AppState> {
 		);
 	}
 
+	getStepperButton(): JSX.Element {
+		return (
+			<div>
+				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Next Step" onClick={this.state.activeStep < 2 ? this.nextStep : this.simulate}>
+					{this.state.activeStep < 2 ? "Next Step" : "Simulate"}
+				</Mui.Button>
+			</div>
+		);
+	}
+
 	render() {
 		return (
 			<Mui.MuiThemeProvider theme={Theme}>
 				<Header />
 				{this.getStepper()}
-				<div>
-				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Next Step" disabled={this.state.activeStep === 2} onClick={this.nextStep}>
-					Next Step
-				</Mui.Button>
-				</div>
+				{this.getStepperButton()}
 				<div className="app">
 					<div className="input-area-container">
 						<InputArea activeStep={this.state.activeStep} />
