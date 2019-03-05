@@ -2,9 +2,9 @@ import * as Mui from '@material-ui/core';
 import { map } from 'lodash';
 import * as React from 'react';
 import { BindMemberMethods } from './utils/react';
-import { Viewer } from './viewer/Viewer';
-import { InputArea } from './ui/InputArea';
-import Theme from './ui/Theme';
+import { Viewer } from './viewer/viewer';
+import { InputArea } from './ui/input-area';
+import Theme from './ui/theme';
 import { Header } from './ui/header';
 
 export class AppSteps {

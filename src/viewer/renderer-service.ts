@@ -1,6 +1,6 @@
 import { fabric } from "fabric";
 import { Entity } from "../model/entity";
-import { VIEWIER_CANVAS_ID } from "./Viewer";
+import { VIEWIER_CANVAS_ID } from "./viewer";
 
 export default class Renderer {
 	private static _instance: Renderer;
