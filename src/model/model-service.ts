@@ -4,15 +4,25 @@ import { Robot } from "./robot";
 import { Vertex } from "./vertex";
 import { Destination } from "./destination";
 
+type Robots = { [index: number]: Robot };
+type Destinations = { [index: number]: Destination };
+type Obstacles = { [index: number]: Obstacle };
+
 export default class Model {
 	private static _instance: Model;
 	public static get Instance() {
 		return Model._instance || (Model._instance = new Model());
 	}
 
-	private robots: { [index: number]: Robot };
-	private destinations: { [index: number]: Destination };
-	private obstacles: { [index: number]: Obstacle };
+	private robots: Robots;
+	public get Robots(): Readonly<Robots> { return this.robots; }
+
+	private destinations: Destinations;
+	public get Destinations(): Readonly<Destinations> { return this.destinations; }
+
+	private obstacles: Obstacles;
+	public get Obstacles(): Readonly<Obstacles> { return this.obstacles; }
+
 	private _cableLength: number;
 	public set cableLength(l: number) { this._cableLength = l; }
 	private cable: Vertex[];
