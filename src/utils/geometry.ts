@@ -6,12 +6,13 @@ import { Obstacle } from '../model/obstacle';
 export type AngledPoint = fabric.Point & { angle?: number };
 
 // https://stackoverflow.com/a/45662872/750567
-export function SortPointsClockwise(points: AngledPoint[]): AngledPoint[] {
-	const center = GetCenterFromPoints(points);
+export function SortPointsClockwise(points: AngledPoint[], center?: fabric.Point): AngledPoint[] {
+	center = center ? center : GetCenterFromPoints(points);
 	const angles: number[] = [];
 	// Starting angle used to reference other angles
 	let startAng = NaN;
 	points.forEach(point => {
+		// @ts-ignore center is not undefined because of the first line
 		var ang = Math.atan2(point.y - center.y,point.x - center.x);
 		if(isNaN(startAng)) {
 			startAng = ang;
