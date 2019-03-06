@@ -38,6 +38,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 		this.state.obstacles.forEach((obs, ind) => { Model.Instance.removeObstacle(ind); });
 		this.setState(partialState);
 		window.setTimeout(() => {
+			this.updateCableLength(partialState.cableLength);
 			Object.keys(partialState.robots).forEach((ind) => { this.setRobot(Number(ind) as 0 | 1) });
 			Object.keys(partialState.obstacles).forEach((ind) => { this.setObstacle(Number(ind)) });
 		}, 500);
@@ -96,7 +97,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 	updateCableLength(val: string): void {
 		const l = Number(val);
 		if (!isNaN(l)) {
-			Model.Instance.cableLength = l;
+			Model.Instance.CableLength = l;
 		}
 		this.setState({ cableLength: val })
 	}
