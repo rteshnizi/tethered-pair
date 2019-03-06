@@ -17,9 +17,6 @@ export default class Model {
 	private robots: Robots;
 	public get Robots(): Readonly<Robots> { return this.robots; }
 
-	private destinations: Destinations;
-	public get Destinations(): Readonly<Destinations> { return this.destinations; }
-
 	private obstacles: Obstacles;
 	public get Obstacles(): Readonly<Obstacles> { return this.obstacles; }
 
@@ -29,7 +26,6 @@ export default class Model {
 
 	private constructor() {
 		this.robots = {};
-		this.destinations = {};
 		this.obstacles = {};
 		this._cableLength = 0;
 		this.cable = [];
@@ -40,13 +36,6 @@ export default class Model {
 			this.robots[ind].remove();
 		}
 		this.robots[ind] = r;
-	}
-
-	public setDestination(d: Destination, ind: 0 | 1): void {
-		if (this.destinations[ind]) {
-			this.destinations[ind].remove();
-		}
-		this.destinations[ind] = d;
 	}
 
 	public setObstacle(o: Obstacle, ind: number): void {

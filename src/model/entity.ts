@@ -13,7 +13,7 @@ export abstract class Entity {
 	private prevStrokeColor: string | undefined;
 	private prevStrokeWidth?: number;
 
-	constructor(public name: string, protected color: string, shape: fabric.Object) {
+	constructor(public name: string, public color: string, shape: fabric.Object) {
 		this._shape = shape;
 		this.prevStrokeColor = undefined;
 		this.prevStrokeWidth = NaN; // Means it's not selected (undefined it is distinguishable from undefined)

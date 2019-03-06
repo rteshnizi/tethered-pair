@@ -82,8 +82,9 @@ export class DestinationPicker extends React.Component<{}, InputState> {
 
 setDestination(ind: 0 | 1): void {
 		const center = CreateFabricPoint(this.state.destinations[ind]);
+		const r = Model.Instance.Robots[ind];
 		if (center) {
-			Model.Instance.setDestination(new Destination(`D${ind}`, center, ind === 0 ? "red" : "blue"), ind);
+			r.Destination = new Destination(`D${ind}`, center, r.color);
 		}
 	}
 

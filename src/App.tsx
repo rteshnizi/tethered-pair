@@ -7,6 +7,7 @@ import { InputArea } from './ui/input-area';
 import Theme from './ui/theme';
 import { Header } from './ui/header';
 import { MakeGapStrings } from './planner/algorithm';
+import Model from './model/model-service';
 
 export class AppSteps {
 	0 = "Initial Configuration";
@@ -66,11 +67,37 @@ class App extends React.Component<{}, AppState> {
 		);
 	}
 
+	nextStepBtnCallback(): void {
+		if (this.state.activeStep < 2) {
+			this.nextStep();
+		} else {
+			this.simulate();
+		}
+	}
+
+	readyToSimulate(): boolean {
+		return (
+			this.state.activeStep < 2 ||
+			(
+				!!Model.Instance.Robots[0].Destination &&
+				!!Model.Instance.Robots[1].Destination
+			)
+		);
+	}
+
 	getStepperButton(): JSX.Element {
 		return (
 			<div>
-				<Mui.Button className="button-with-margin" size="small" variant="contained" color="primary" aria-label="Next Step" onClick={this.state.activeStep < 2 ? this.nextStep : this.simulate}>
-					{this.state.activeStep < 2 ? "Next Step" : "Simulate"}
+				<Mui.Button
+					className="button-with-margin"
+					size="small"
+					variant="contained"
+					color="primary"
+					aria-label="Next Step"
+					disabled={!this.readyToSimulate()}
+					onClick={this.nextStepBtnCallback}
+					>
+						{this.state.activeStep < 2 ? "Next Step" : "Simulate"}
 				</Mui.Button>
 			</div>
 		);

@@ -11,12 +11,12 @@ export default class Renderer {
 	}
 
 	private canvas: fabric.Canvas;
-	private shapes: Map<string, Entity>;
+	// private shapes: Map<string, Entity>;
 
 	private constructor(canvasId: string) {
 		this.canvas = new fabric.Canvas(canvasId);
 		this.canvas.renderOnAddRemove = RENDER_ON_CHANGE;
-		this.shapes = new Map();
+		// this.shapes = new Map();
 	}
 
 	addEntity(e: Entity, forceRender?: boolean): void {
