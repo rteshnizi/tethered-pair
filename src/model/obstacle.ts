@@ -6,15 +6,14 @@ type Vertices = Vertex[];
 
 const VERTEX_COLOR = "purple";
 const VERTEX_RADIUS = 3;
+const COLOR = "grey";
 
 export class Obstacle extends Entity {
 	public vertices: Vertices;
 	// TODO: Build list of edges as well
 	constructor(name: string, fabricPoints: fabric.Point[]/*, public left: number, public top: number*/) {
-		super(name, new fabric.Polygon(fabricPoints, {
-			// left,
-			// top,
-			fill: "grey"
+		super(name, COLOR, new fabric.Polygon(fabricPoints, {
+			fill: COLOR
 		}));
 		this.vertices = this.createVertices(fabricPoints);
 	}

@@ -2,6 +2,8 @@ import { fabric } from "fabric";
 import { Entity } from "../model/entity";
 import { VIEWIER_CANVAS_ID } from "./viewer";
 
+const RENDER_ON_CHANGE = true;
+
 export default class Renderer {
 	private static _instance: Renderer;
 	public static get Instance() {
@@ -13,24 +15,28 @@ export default class Renderer {
 
 	private constructor(canvasId: string) {
 		this.canvas = new fabric.Canvas(canvasId);
+		this.canvas.renderOnAddRemove = RENDER_ON_CHANGE;
 		this.shapes = new Map();
 	}
 
-	addEntity(e: Entity): void {
+	addEntity(e: Entity, forceRender?: boolean): void {
 		// this.shapes.set(e.name, e);
 		this.canvas.add(e.shape);
 	}
 
-	removeEntity(e: Entity): void{
+	removeEntity(e: Entity, forceRender?: boolean): void{
 		this.canvas.remove(e.shape);
+		this.render(forceRender);
 	}
 
-	render(): void {
+	render(force?: boolean): void {
 		// this.shapes.forEach((e) => {
 		// 	if (e.dirty) {
 
 		// 	}
 		// });
-		this.canvas.renderAll();
+		if (force || !RENDER_ON_CHANGE) {
+			this.canvas.renderAll();
+		}
 	}
 }

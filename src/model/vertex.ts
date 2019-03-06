@@ -2,6 +2,10 @@ import { fabric } from 'fabric';
 import { Entity } from './entity';
 import { Obstacle } from './obstacle';
 import Model from './model-service';
+import { Edge } from './edge';
+import Renderer from '../viewer/renderer-service';
+
+const DEFAULT_FILL = 'rgba(0,0,0,0)';
 
 export interface VertexOption {
 	owner?: Obstacle;
@@ -12,24 +16,32 @@ export interface VertexOption {
 
 export class Vertex extends Entity {
 	constructor(name: string, public location: fabric.Point, public options: VertexOption) {
-		super(name, new fabric.Circle({
+		super(name, options.color, new fabric.Circle({
 			radius: options.renderRadius,
 			left: location.x - options.renderRadius,
 			top: location.y - options.renderRadius,
-			fill: options.shouldFill ? options.color : "white",
+			fill: options.shouldFill ? options.color : DEFAULT_FILL,
 			stroke: options.color
 		}));
 	}
 
 	isVisible(other: Vertex): boolean {
-		const line = new fabric.Line(undefined, { x1: this.location.x, x2: other.location.x, y1: this.location.y, y2: other.location.y });
-		for(let i = 0; i < Object.keys(Model.Instance.Obstacles).length; i++) {
+		let isVis = true;
+		const line = new Edge(`${this.name}<->${other.name}`, this, other);
+		const numObs = Object.keys(Model.Instance.Obstacles).length;
+		let i = 0;
+		for(; i < numObs; i++) {
 			const o = Model.Instance.Obstacles[i];
+			if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
+			o.select();
 			if (this.options.owner && o.name === this.options.owner.name) continue;
-			if (line.intersectsWithObject(o.shape)) {
-				return false
+			if (line.shape.intersectsWithObject(o.shape)) {
+				isVis = false;
+				line.remove();
+				break;
 			}
 		}
-		return true;
+		Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
+		return isVis;
 	}
 }

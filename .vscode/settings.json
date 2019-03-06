@@ -2,6 +2,7 @@
     "editor.insertSpaces": false,
     "files.trimTrailingWhitespace": true,
     "cSpell.words": [
+        "rerender",
         "verts"
     ]
 }

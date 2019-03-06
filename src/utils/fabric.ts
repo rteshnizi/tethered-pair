@@ -6,12 +6,14 @@ import { trim } from 'lodash';
  * @param shape The shape to be locked
  */
 export function DisableFabricJsMouseEvents(shape: fabric.Object): void {
-	shape.lockMovementX = true;
-	shape.lockMovementY = true;
-	shape.lockScalingX = true;
-	shape.lockScalingY = true;
-	shape.lockUniScaling = true;
-	shape.lockRotation = true;
+	// shape.lockMovementX = true;
+	// shape.lockMovementY = true;
+	// shape.lockScalingX = true;
+	// shape.lockScalingY = true;
+	// shape.lockUniScaling = true;
+	// shape.lockRotation = true;
+	shape.evented = false;
+	shape.selectable = false;
 }
 
 /**

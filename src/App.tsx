@@ -6,6 +6,7 @@ import { Viewer } from './viewer/viewer';
 import { InputArea } from './ui/input-area';
 import Theme from './ui/theme';
 import { Header } from './ui/header';
+import { MakeGapStrings } from './planner/algorithm';
 
 export class AppSteps {
 	0 = "Initial Configuration";
@@ -46,7 +47,7 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	simulate(): void {
-		// Simulate Algorithm
+		MakeGapStrings();
 	}
 
 	getStepper(): JSX.Element {
