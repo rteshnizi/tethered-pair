@@ -23,7 +23,11 @@ export class Obstacle extends Entity {
 		const verts: Vertices = [];
 		let i = 1;
 		fabricPoints.forEach((p) => {
-			verts.push(new Vertex(`${this.name}-${i}`, p, VERTEX_COLOR, false, VERTEX_RADIUS));
+			verts.push(new Vertex(`${this.name}-${i}`, p, {
+				color: VERTEX_COLOR,
+				owner: this,
+				renderRadius: VERTEX_RADIUS
+			}));
 		});
 		return verts;
 	}

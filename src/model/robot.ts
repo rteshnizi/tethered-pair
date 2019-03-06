@@ -2,33 +2,42 @@ import { fabric } from 'fabric';
 import Model from './model-service';
 import { forEach } from 'lodash';
 import { Vertex } from './vertex';
+import Renderer from '../viewer/renderer-service';
+import { Gap } from './gap';
 
 const RENDER_RADIUS = 5;
 
 export class Robot extends Vertex {
+	private gaps: Gap[];
 	constructor(name: string, public location: fabric.Point, color: string) {
-		super(name, location, color, true, RENDER_RADIUS);
+		super(name, location, {
+			color,
+			shouldFill: true,
+			renderRadius: RENDER_RADIUS
+		});
+		this.gaps = [];
 	}
 
-	getGaps(): Vertex[] {
-		const gaps: Vertex[] = [];
+	public findGaps(): Gap[] {
+		const gaps: Gap[] = [];
+		const checkGap = (vert: Vertex) => {
+			if (vert.isVisible(this)) {
+				gaps.push(new Gap(`${this.name}-${gaps.length + 1}`, vert.location, { robot: this }));
+			}
+		};
+		forEach(Model.Instance.Destinations, checkGap);
 		forEach(Model.Instance.Obstacles, (obs) => {
-			obs.vertices.forEach((vert) => {
-				const line = new fabric.Line(undefined, { x1: this.location.x, x2: vert.location.x, y1: this.location.y, y2: vert.location.y });
-				let shouldAdd = true;
-				for(let i = 0; i < Object.keys(Model.Instance.Obstacles).length; i++) {
-					const o = Model.Instance.Obstacles[i];
-					if (o.name === obs.name) continue;
-					if (line.intersectsWithObject(o.shape)) {
-						shouldAdd = false;
-						break;
-					}
-				}
-				if (shouldAdd) {
-					gaps.push(vert);
-				}
-			});
+			obs.vertices.forEach(checkGap);
 		});
 		return gaps;
 	}
+
+	public renderGaps(): void {
+		this.gaps.forEach((gap) => { Renderer.Instance.addEntity(gap); });
+	}
+
+	public clearGaps(): void {
+		this.gaps.forEach((gap) => { Renderer.Instance.removeEntity(gap); });
+	}
+
 }

@@ -5,6 +5,6 @@ const RENDER_RADIUS = 5;
 
 export class Destination extends Vertex {
 	constructor(name: string, location: fabric.Point, color: string) {
-		super(name, location, color, false, RENDER_RADIUS);
+		super(name, location, { color, renderRadius: RENDER_RADIUS });
 	}
 }

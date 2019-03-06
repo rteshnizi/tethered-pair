@@ -1,4 +1,7 @@
 {
     "editor.insertSpaces": false,
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "cSpell.words": [
+        "verts"
+    ]
 }
