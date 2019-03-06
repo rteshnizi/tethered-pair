@@ -28,4 +28,3 @@ export function CreateFabricPoint(val: string): fabric.Point | null {
 	if (isNaN(x) || isNaN(y)) return null;
 	return new fabric.Point(x, y);
 }
-

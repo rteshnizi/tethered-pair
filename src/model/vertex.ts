@@ -28,26 +28,24 @@ export class Vertex extends Entity {
 
 	isVisible(other: Vertex): boolean {
 		let isVis = true;
-		const line = new Edge(`${this.name}<->${other.name}`, this, other);
+		const edge = new Edge(`${this.name}<->${other.name}`, this, other);
 		const numObs = Object.keys(Model.Instance.Obstacles).length;
 		let i = 0;
 		for(; i < numObs; i++) {
 			const o = Model.Instance.Obstacles[i];
 			if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
 			o.select();
-			if (this.options.owner && o.name === this.options.owner.name) {
-				if (IntersectEdgeAndObstacle(line, o)) {
-					isVis = false;
-					line.remove();
-					break;
-				}
-			} else if (line.shape.intersectsWithObject(o.shape)) {
+			if (IntersectEdgeAndObstacle(edge, o)) {
 				isVis = false;
-				line.remove();
+				edge.remove();
 				break;
 			}
 		}
 		Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
 		return isVis;
+	}
+
+	isOwner(o: Obstacle): boolean {
+		return !!this.options.owner && (o.name === this.options.owner.name);
 	}
 }
