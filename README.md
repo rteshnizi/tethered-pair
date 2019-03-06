@@ -7,3 +7,5 @@ Development code for Tethered Pair Algorithm
 
 ## Todo
 1. Limit Obstacles to the ones inside or partially inside the bounding box
+2. Not all Entities need rendering (Fix Entity to accept a bool for rendering)
+3. Model.reset()
