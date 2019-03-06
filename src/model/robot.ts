@@ -38,11 +38,10 @@ export class Robot extends Vertex {
 				gaps.push(new Gap(`${this.name}-${gaps.length + 1}`, vert.location, { robot: this }));
 			}
 		};
-		if (this.Destination)
+		if (this.Destination) {
 			checkGap(this.Destination);
-		forEach(Model.Instance.Obstacles, (obs) => {
-			obs.vertices.forEach(checkGap);
-		});
+		}
+		Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
 		return gaps;
 	}
 
