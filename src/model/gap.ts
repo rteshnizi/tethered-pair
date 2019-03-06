@@ -3,7 +3,7 @@ import { Entity } from './entity';
 import { Obstacle } from './obstacle';
 import { Robot } from './robot';
 
-const EDGE_LENGTH = 4;
+const EDGE_LENGTH = 6;
 const DEFAULT_COLOR = 'orange';
 
 export interface GapOption {
@@ -18,6 +18,7 @@ export class Gap extends Entity {
 			top: location.y - (EDGE_LENGTH / 2),
 			width: EDGE_LENGTH,
 			height: EDGE_LENGTH,
+			fill: 'rgba(0,0,0,0)',
 			stroke: options ? options.robot.options.color : DEFAULT_COLOR }));
 	}
 }
