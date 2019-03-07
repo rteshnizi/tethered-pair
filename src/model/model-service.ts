@@ -6,7 +6,6 @@ import { Destination } from "./destination";
 import { forEach } from "lodash";
 
 type Robots = { [index: number]: Robot };
-type Destinations = { [index: number]: Destination };
 type Obstacles = { [index: number]: Obstacle };
 
 export default class Model {
@@ -14,6 +13,8 @@ export default class Model {
 	public static get Instance() {
 		return Model._instance || (Model._instance = new Model());
 	}
+
+	public AllEntities: Map<string, Entity>;
 
 	private robots: Robots;
 	public get Robots(): Readonly<Robots> { return this.robots; }
@@ -61,8 +62,10 @@ export default class Model {
 		this._cableLength = 0;
 		this.cable = [];
 		this.vertices = null;
+		this.AllEntities = new Map();
 	}
 
+	/** This method is used when building initial config when user changes size and location of robots */
 	public setRobot(r: Robot, ind: 0 | 1): void {
 		if (this.robots[ind]) {
 			this.robots[ind].remove();
@@ -70,6 +73,7 @@ export default class Model {
 		this.robots[ind] = r;
 	}
 
+	/** This method is used when building initial config when user changes size and location of obstacles */
 	public setObstacle(o: Obstacle, ind: number): void {
 		if (this.obstacles[ind]) {
 			this.obstacles[ind].remove();

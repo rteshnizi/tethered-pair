@@ -64,3 +64,21 @@ code {
 .preset-select {
 	min-width: 100px !important;
 }
+
+.simulation-info {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 18px;
+	color: aliceblue;
+}
+
+.simulation-info-elem {
+	padding: 2px 15px;
+	margin: 2px 0px;
+}
+
+.simulation-info-elem:hover {
+	border-color: maroon;
+	border-width: 1px;
+	border-style: dotted;
+	/* padding: 2px 15px; */
+}

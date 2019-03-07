@@ -1,6 +1,7 @@
 import { fabric } from 'fabric';
 import Renderer from '../viewer/renderer-service';
 import { DisableFabricJsMouseEvents } from '../utils/fabric';
+import Model from './model-service';
 
 const SELECT_COLOR = '#FF1493';
 const SELECT_WIDTH = 3;
@@ -21,6 +22,7 @@ export abstract class Entity {
 		this.isRendered = false;
 
 		DisableFabricJsMouseEvents(this._shape);
+		Model.Instance.AllEntities.set(this.name, this);
 		if (!doNotRenderInCtor){
 			this.render();
 		}
@@ -52,6 +54,7 @@ export abstract class Entity {
 	}
 
 	public remove(): void {
+		Model.Instance.AllEntities.delete(this.name);
 		Renderer.Instance.removeEntity(this, true);
 	}
 
