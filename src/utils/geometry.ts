@@ -1,13 +1,16 @@
 import { fabric } from 'fabric';
-import { Group, Line, Pt } from 'pts';
+import { Group, Line, Polygon, Pt, PtLike } from 'pts';
 import { Edge } from '../model/edge';
 import { Obstacle } from '../model/obstacle';
 import { EntityWithLocation } from '../model/entity';
+import { Vertex } from '../model/vertex';
+import { Robot } from '../model/robot';
 
 export type AngledPoint = fabric.Point & { angle?: number };
 
 export class Geometry {
-	private static const HUGE_NUMBER_LOL = 1000000000;
+	/** It's just a very bug number */
+	private static HUGE_NUMBER_LOL = 1000000000;
 
 	// https://stackoverflow.com/a/45662872/750567
 	public static SortPointsClockwise(points: AngledPoint[] | EntityWithLocation[], center?: fabric.Point): void {
@@ -77,7 +80,7 @@ export class Geometry {
 		const line = Fabric2Pts.Line(e);
 		const intersections = Line.intersectPolygon2D(line, polygon);
 		if (!intersections || intersections.length === 0) return false;
-		const isOwner = e.v1.isOwner(o) || e.v2.isOwner(o);
+		const isOwner = e.v1.isOwnedBy(o) || e.v2.isOwnedBy(o);
 		if (!isOwner) return true;
 		const points = intersections.map(Pts2Fabric.Point);
 		// If this is the owner Obstacle, in our context, we don't count it as intersection if the edge ends on the obstacle.
@@ -91,20 +94,28 @@ export class Geometry {
 	}
 
 	/**
-	 * Gap is a discontinuity is the distance.
-	 * I test this by extending the edge slightly and see if the end of the edge is inside the obstacle (the owner of the vertex)
+	 * Gap is a discontinuity is the distance. I test this by pushing the obstacle vertex slightly in the same direction
+	 * as the visibility edge and see if it falls inside the Obstacle.
+	 * That is, by extending the edge slightly and see if the end of the edge is inside the obstacle (the owner of the vertex)
 	 */
-	public static IsVertexAGap(e: Edge, o: Obstacle): boolean {
-		e.shape.
+	public static IsVertexAGap(r: Robot, v: Vertex, o: Obstacle): boolean {
+		// We only need to test this for the vertex whose owner is the given Obstacle
+		const vec = Geometry.GetEpsilonVector(r, v);
+		const moved = v.location.add(vec);
+		const poly = Fabric2Pts.Polygon(o);
+		return !Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(moved));
 	}
 
-	public static GetEpsilonVector(e: Edge): fabric.Point {
-		const v = e.v1.location.subtract(e.v2.location);
-		return v.divideEquals(Geometry.HUGE_NUMBER_LOL);
+	public static GetEpsilonVector(start: Vertex, end: Vertex): fabric.Point {
+		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
 	}
 }
 
 class Fabric2Pts {
+	public static Pt(p: fabric.Point): PtLike {
+		return [p.x, p.y];
+	}
+
 	public static Line(e: Edge): Group {
 		return Group.fromArray([
 			[e.v1.location.x, e.v1.location.y],

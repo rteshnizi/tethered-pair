@@ -51,7 +51,7 @@ export class Vertex extends EntityWithLocation {
 		return isVis;
 	}
 
-	isOwner(o: Obstacle): boolean {
+	isOwnedBy(o: Obstacle): boolean {
 		return !!this.options.owner && (o.name === this.options.owner.name);
 	}
 

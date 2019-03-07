@@ -5,6 +5,7 @@ import { Vertex } from './vertex';
 import Renderer from '../viewer/renderer-service';
 import { Gap } from './gap';
 import { Destination } from './destination';
+import { Geometry } from '../utils/geometry';
 
 const RENDER_RADIUS = 5;
 
@@ -37,7 +38,7 @@ export class Robot extends Vertex {
 		this.clearGaps();
 		this.gaps = [];
 		const checkGap = (vert: Vertex) => {
-			if (vert.isVisible(this)) {
+			if (vert.isVisible(this) && vert.options.owner && Geometry.IsVertexAGap(this, vert, vert.options.owner)) {
 				this._renderedGaps.push(new Gap(`${this.name}-${this.gaps.length + 1}`, vert.location, { robot: this }));
 				this.gaps.push(vert);
 			}
