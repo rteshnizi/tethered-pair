@@ -7,7 +7,7 @@ import { BindMemberMethods } from '../utils/react';
 import { Robot } from '../model/robot';
 import Model from '../model/model-service';
 import { Obstacle } from '../model/obstacle';
-import { SortPointsClockwise } from '../utils/geometry';
+import { Geometry } from '../utils/geometry';
 import { AllPresets } from '../model/presets';
 import { CreateFabricPoint } from '../utils/fabric';
 
@@ -154,7 +154,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 				verts.push(vert);
 			}
 		});
-		SortPointsClockwise(verts);
+		Geometry.SortPointsClockwise(verts);
 		Model.Instance.setObstacle(new Obstacle(`O${ind}`, verts), ind);
 	}
 

@@ -10,7 +10,7 @@ const COLOR = "grey";
 
 export class Obstacle extends Entity {
 	public vertices: Vertices;
-	// TODO: Build list of edges as well
+	// TODO: Build list of edges as well -> Use Geometry function
 	constructor(name: string, public fabricPoints: fabric.Point[]/*, public left: number, public top: number*/) {
 		super(name, COLOR, new fabric.Polygon(fabricPoints, {
 			fill: COLOR

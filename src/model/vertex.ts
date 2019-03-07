@@ -1,9 +1,9 @@
 import { fabric } from 'fabric';
-import { Entity } from './entity';
+import { EntityWithLocation } from './entity';
 import { Obstacle } from './obstacle';
 import Model from './model-service';
 import { Edge } from './edge';
-import { IntersectEdgeAndObstacle } from '../utils/geometry';
+import { Geometry } from '../utils/geometry';
 import { Destination } from './destination';
 
 const DEFAULT_FILL = 'rgba(0,0,0,0)';
@@ -17,12 +17,12 @@ export interface VertexOption {
 	renderRadius: number;
 }
 
-export class Vertex extends Entity {
+export class Vertex extends EntityWithLocation {
 	private anchorChecked = false;
 	private _canAnchor: boolean;
 
-	constructor(name: string, public location: fabric.Point, public options: VertexOption) {
-		super(name, options.color, new fabric.Circle({
+	constructor(name: string, location: fabric.Point, public options: VertexOption) {
+		super(name, location, options.color, new fabric.Circle({
 			radius: options.renderRadius,
 			left: location.x - options.renderRadius,
 			top: location.y - options.renderRadius,
@@ -41,7 +41,7 @@ export class Vertex extends Entity {
 			const o = Model.Instance.Obstacles[i];
 			if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
 			o.select();
-			if (IntersectEdgeAndObstacle(edge, o)) {
+			if (Geometry.IntersectEdgeAndObstacle(edge, o)) {
 				isVis = false;
 				break;
 			}
@@ -51,7 +51,7 @@ export class Vertex extends Entity {
 		return isVis;
 	}
 
-	isOwner(o: Obstacle): boolean {
+	isOwnedBy(o: Obstacle): boolean {
 		return !!this.options.owner && (o.name === this.options.owner.name);
 	}
 
