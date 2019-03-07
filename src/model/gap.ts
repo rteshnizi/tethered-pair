@@ -1,5 +1,5 @@
 import { fabric } from 'fabric';
-import { Entity } from './entity';
+import { EntityWithLocation } from './entity';
 import { Obstacle } from './obstacle';
 import { Robot } from './robot';
 
@@ -11,14 +11,17 @@ export interface GapOption {
 	obstacle?: Obstacle
 }
 
-export class Gap extends Entity {
-	constructor(name: string, public location: fabric.Point, public options?: GapOption) {
-		super(name, options ? options.robot.options.color : DEFAULT_COLOR, new fabric.Rect({
+export class Gap extends EntityWithLocation {
+	/** Only used in sorting */
+	public angle: number;
+	constructor(name: string, location: fabric.Point, public options?: GapOption) {
+		super(name, location, options ? options.robot.options.color : DEFAULT_COLOR, new fabric.Rect({
 			left: location.x - (EDGE_LENGTH / 2),
 			top: location.y - (EDGE_LENGTH / 2),
 			width: EDGE_LENGTH,
 			height: EDGE_LENGTH,
 			fill: 'rgba(0,0,0,0)',
 			stroke: options ? options.robot.options.color : DEFAULT_COLOR }));
+		this.angle = NaN;
 	}
 }

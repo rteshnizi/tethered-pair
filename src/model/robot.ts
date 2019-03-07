@@ -9,7 +9,8 @@ import { Destination } from './destination';
 const RENDER_RADIUS = 5;
 
 export class Robot extends Vertex {
-	private gaps: Gap[];
+	private _renderedGaps: Gap[];
+	public gaps: Vertex[];
 	private _destination: Destination | null;
 	public set Destination(d: Destination | null) {
 		if (this._destination) {
@@ -29,28 +30,31 @@ export class Robot extends Vertex {
 		});
 		this._destination = null;
 		this.gaps = [];
+		this._renderedGaps = [];
 	}
 
-	public findGaps(): Gap[] {
-		const gaps: Gap[] = [];
+	public findGaps(): Vertex[] {
+		this.clearGaps();
+		this.gaps = [];
 		const checkGap = (vert: Vertex) => {
 			if (vert.isVisible(this)) {
-				gaps.push(new Gap(`${this.name}-${gaps.length + 1}`, vert.location, { robot: this }));
+				this._renderedGaps.push(new Gap(`${this.name}-${this.gaps.length + 1}`, vert.location, { robot: this }));
+				this.gaps.push(vert);
 			}
 		};
 		if (this.Destination) {
 			checkGap(this.Destination);
 		}
 		Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
-		return gaps;
+		return this.gaps;
 	}
 
 	public renderGaps(): void {
-		this.gaps.forEach((gap) => { Renderer.Instance.addEntity(gap); });
+		this._renderedGaps.forEach((gap) => { Renderer.Instance.addEntity(gap); });
 	}
 
 	public clearGaps(): void {
-		this.gaps.forEach((gap) => { Renderer.Instance.removeEntity(gap); });
+		this._renderedGaps.forEach((gap) => { Renderer.Instance.removeEntity(gap); });
 	}
 
 }
