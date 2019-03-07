@@ -34,7 +34,7 @@ export class Robot extends Vertex {
 		this._renderedGaps = [];
 	}
 
-	public findGaps(): Vertex[] {
+	public findGaps(): void {
 		this.clearGaps();
 		this.gaps = [];
 		const checkGap = (vert: Vertex) => {
@@ -47,7 +47,6 @@ export class Robot extends Vertex {
 			checkGap(this.Destination);
 		}
 		Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
-		return this.gaps;
 	}
 
 	public renderGaps(): void {

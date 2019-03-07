@@ -15,7 +15,7 @@ export abstract class Entity {
 	private prevStrokeColor: string | undefined;
 	private prevStrokeWidth?: number;
 
-	constructor(public name: string, public color: string, shape: fabric.Object, doNotRenderInCtor?: boolean) {
+	constructor(public name: string, public color: string, shape: fabric.Object, renderInCtor: boolean) {
 		this._shape = shape;
 		this.prevStrokeColor = undefined;
 		this.prevStrokeWidth = NaN; // Means it's not selected (undefined it is distinguishable from undefined)
@@ -23,7 +23,7 @@ export abstract class Entity {
 
 		DisableFabricJsMouseEvents(this._shape);
 		Model.Instance.AllEntities.set(this.name, this);
-		if (!doNotRenderInCtor){
+		if (renderInCtor){
 			this.render();
 		}
 	}
@@ -63,13 +63,17 @@ export abstract class Entity {
 		Renderer.Instance.render();
 		this.isRendered = true;
 	}
+
+	public toString(): string {
+		return this.name;
+	}
 }
 
 export abstract class EntityWithLocation extends Entity {
 	/** The value in angle is meaningless outside of the context it is set */
 	public angle: number;
-	constructor(name: string, public location: fabric.Point, public color: string, shape: fabric.Object) {
-		super(name, color, shape);
+	constructor(name: string, public location: fabric.Point, public color: string, shape: fabric.Object, renderInCtor: boolean) {
+		super(name, color, shape, renderInCtor);
 		this.angle = NaN;
 	}
 };

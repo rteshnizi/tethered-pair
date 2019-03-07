@@ -8,20 +8,28 @@ const DEFAULT_COLOR = 'orange';
 
 export interface GapOption {
 	robot: Robot;
-	obstacle?: Obstacle
+	obstacle?: Obstacle;
 }
 
+/**
+ * This should not be used in the algorithm.
+ * This is just for visualization purposes.
+ */
 export class Gap extends EntityWithLocation {
 	/** Only used in sorting */
 	public angle: number;
 	constructor(name: string, location: fabric.Point, public options?: GapOption) {
-		super(name, location, options ? options.robot.options.color : DEFAULT_COLOR, new fabric.Rect({
-			left: location.x - (EDGE_LENGTH / 2),
-			top: location.y - (EDGE_LENGTH / 2),
-			width: EDGE_LENGTH,
-			height: EDGE_LENGTH,
-			fill: 'rgba(0,0,0,0)',
-			stroke: options ? options.robot.options.color : DEFAULT_COLOR }));
+		super(name, location,
+			options ? options.robot.options.color : DEFAULT_COLOR,
+			new fabric.Rect({
+				left: location.x - (EDGE_LENGTH / 2),
+				top: location.y - (EDGE_LENGTH / 2),
+				width: EDGE_LENGTH,
+				height: EDGE_LENGTH,
+				fill: 'rgba(0,0,0,0)',
+				stroke: options ? options.robot.options.color : DEFAULT_COLOR ,
+			}),
+			false);
 		this.angle = NaN;
 	}
 }

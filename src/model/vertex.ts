@@ -28,7 +28,7 @@ export class Vertex extends EntityWithLocation {
 			top: location.y - options.renderRadius,
 			fill: options.shouldFill ? (options.fillColor ? options.fillColor : options.color) : DEFAULT_FILL,
 			stroke: options.color
-		}));
+		}), true);
 		this._canAnchor = false;
 	}
 

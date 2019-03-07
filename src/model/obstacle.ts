@@ -14,7 +14,7 @@ export class Obstacle extends Entity {
 	constructor(name: string, public fabricPoints: fabric.Point[]/*, public left: number, public top: number*/) {
 		super(name, COLOR, new fabric.Polygon(fabricPoints, {
 			fill: COLOR
-		}));
+		}), true);
 		this.vertices = this.createVertices(fabricPoints);
 	}
 
