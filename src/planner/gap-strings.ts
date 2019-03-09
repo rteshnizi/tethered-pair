@@ -1,5 +1,4 @@
 import Model from "../model/model-service";
-import { forEach } from "lodash";
 import { Geometry } from "../utils/geometry";
 import { Vertex } from "../model/vertex";
 import { Robot } from "../model/robot";
@@ -11,75 +10,65 @@ export interface GapString {
 	robotNames: string[];
 }
 
-export function IsValidGapPair(gapPairs: Set<string>, g1: string, g2: string): boolean {
-	return gapPairs.has(`${g1}-${g2}`) || gapPairs.has(`${g2}-${g1}`);
+export class LabeledGap {
+	constructor(public gap: Vertex, public robot: Robot) { }
+	toString() {
+		return `(${this.robot.name},${this.gap.name})`;
+	}
+}
+
+export function IsValidGapPair(gapPairs: Set<string>, g1: LabeledGap, g2: LabeledGap): boolean {
+	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
 
 export function GetGapPairs(): Set<string> {
 	const s: Set<string> = new Set();
-	const processGapString = (gapString: GapString) => {
-		for(let i = 0; i < gapString.gapNames.length; i++) {
-			const g1 = gapString.gapNames[i];
-			let g2 = gapString.gapNames[i];
+	const processGapString = (gapString: LabeledGap[]) => {
+		for(let i = 0; i < gapString.length; i++) {
+			const g1 = gapString[i];
+			let g2 = gapString[i];
 			// go forward until you see a gap of the the other robot
-			for(let j = i + 1; j < gapString.gapNames.length; j++) {
-				g2 = gapString.gapNames[j];
-				if (gapString.robotNames[j] !== gapString.robotNames[i]) break;
+			for(let j = i + 1; j < gapString.length; j++) {
+				g1.gap.select();
+				g2 = gapString[j];
+				g2.gap.select();
+				if (gapString[j].robot !== gapString[i].robot) break;
+				g2.gap.deselect();
 			}
-			if (g1 !== g2 && GetVertexByName(g1).isVisible(GetVertexByName(g2))) {
-				s.add(`${g1}-${g2}`);
-				s.add(`${g2}-${g1}`);
+			const verts = [g1.robot.location, g2.robot.location, g2.gap.location, g1.gap.location];
+			// g1.robot.name !== g2.robot.name is there to prevent the end of the for loops
+			if (g1.robot.name !== g2.robot.name && g1.gap.isVisible(g2.gap) && Geometry.IsPolygonEmpty(verts)) {
+				s.add(MakeGapPairName(g1, g2));
 			}
+			g1.gap.deselect();
+			g2.gap.deselect();
 		}
 	};
 	MakeGapStrings().forEach(processGapString);
 	return s;
 }
 
-function MakeGapStrings(): GapString[] {
-	forEach(Model.Instance.Robots, (robot) => {
-		robot.findGaps();
-	});
+function MakeGapStrings(): LabeledGap[][] {
 	const r0 = Model.Instance.Robots[0];
 	const r1 = Model.Instance.Robots[1];
+	r0.findGaps();
+	r1.findGaps();
 	const r0String = MakeGapString(r0, r1);
 	const r1String = MakeGapString(r1, r0);
 	return [r0String, r1String];
 }
 
-function MakeGapString(main: Robot, other: Robot): GapString {
-	const allGaps = GetAllGaps(main, other);
-	const edgeRef = new Edge(`${main.toString()}->${other.toString()}`, main, other);
-	const sortedGaps = Array.from(allGaps.keys()).map((name) => GetVertexByName(name));
-	Geometry.SortPointsClockwiseByEdge(sortedGaps, edgeRef);
-	return CreateGapStringsFromSortedGaps(allGaps, sortedGaps);
+function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
+	let edgeRef = new Edge(`${main.toString()}->${other.toString()}`, main, other);
+	const all: LabeledGap[] = [];
+	const addGap = (gap: Vertex, robot: Robot) => {
+		all.push(new LabeledGap(gap, robot));
+	};
+	main.gaps.forEach((g) => { addGap(g, main); });
+	other.gaps.filter((g) => main.isVisible(g)).forEach((g) => { addGap(g, other); })
+	return all;
 }
 
-function GetAllGaps(main: Robot, other: Robot): Map<string, string> {
-	const map: Map<string, string> = new Map();
-	const addGap = (g: Vertex, label: string) => { map.set(g.name, label); };
-	// Main comes after because the vertex that belongs to main has to remain labeled to main
-	other.gaps.forEach((g: Vertex) => {
-		// Only add visible ones to the map
-		if (main.isVisible(g)) {
-			addGap(g, other.name);
-		}
-	});
-	main.gaps.forEach((g: Vertex) => { addGap(g, main.name); });
-	return map;
-}
-
-function CreateGapStringsFromSortedGaps(allGaps: Map<string, string>, sortedGaps: Vertex[]): GapString {
-	const gapNames: string[] = [];
-	const robotNames: string[] = [];
-	sortedGaps.forEach((v) => {
-		gapNames.push(v.name);
-		robotNames.push(allGaps.get(v.name) as string);
-	});
-	return { gapNames, robotNames };
-}
-
-/** You MUST be confident that the name is a valid Vertex, otherwise it will break the code */
-function GetVertexByName(name: string): Vertex {
-	return Model.Instance.AllEntities.get(name) as Vertex;
+function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
+	return `${g1.toString()}-${g2.toString()}`;
 }

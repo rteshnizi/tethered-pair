@@ -6,6 +6,8 @@ import { EntityWithLocation } from '../model/entity';
 import { Vertex } from '../model/vertex';
 import { Robot } from '../model/robot';
 import { GetFabricPointFromVertex } from './fabric';
+import { LabeledGap } from '../planner/gap-strings';
+import Model from '../model/model-service';
 
 export type AngledPoint = fabric.Point & { angle?: number };
 
@@ -36,8 +38,12 @@ export class Geometry {
 		points.sort((a, b) => a.angle - b.angle);
 	}
 
-	public static SortPointsClockwiseByEdge(points: fabric.Point[] | EntityWithLocation[], edge: Edge): void {
-		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => SortCriteria.ByAngle(a, b, edge));
+	public static SortGapsClockwiseByEdge(points: EntityWithLocation[], edge: Edge): void {
+		points.sort((a: EntityWithLocation, b: EntityWithLocation) => SortCriteria.ByAngle(a.location, b.location, edge));
+	}
+
+	public static SortLabeledGapsClockwiseByEdge(points: LabeledGap[], edge: Edge): void {
+		points.sort((a, b) => SortCriteria.ByAngle(a.gap.location, b.gap.location, edge));
 	}
 
 	// https://stackoverflow.com/a/45662872/750567
@@ -71,7 +77,7 @@ export class Geometry {
 		if (!e.shape.intersectsWithObject(o.shape)) return false;
 
 		// Now that we know they are intersecting using Pts for more complicated calculation
-		const polygon = Fabric2Pts.Polygon(o);
+		const polygon = Fabric2Pts.PolygonFromObstacle(o);
 		const line = Fabric2Pts.Line(e);
 		const intersections = Line.intersectPolygon2D(line, polygon);
 		if (!intersections || intersections.length === 0) return false;
@@ -97,12 +103,29 @@ export class Geometry {
 		// We only need to test this for the vertex whose owner is the given Obstacle
 		const vec = Geometry.GetEpsilonVector(r, v);
 		const moved = v.location.add(vec);
-		const poly = Fabric2Pts.Polygon(o);
+		const poly = Fabric2Pts.PolygonFromObstacle(o);
 		return !Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(moved));
 	}
 
 	public static GetEpsilonVector(start: Vertex, end: Vertex): fabric.Point {
 		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
+	}
+
+	/** Uses Model.Instance */
+	public static IsPolygonEmpty(polygonVerts: fabric.Point[]): boolean {
+		const poly = Fabric2Pts.PolygonFabricPoints(polygonVerts);
+		const isAPolygonVertex = (v: fabric.Point) => {
+			// @ts-ignore @types is wrong for these functions
+			return polygonVerts.some((p) => {
+				return v.eq(p);
+			});
+		}
+		for (let i = 0; i < Model.Instance.Vertices.length; i++) {
+			const vert = Model.Instance.Vertices[i].location;
+			if(isAPolygonVertex(vert)) continue;
+			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert))) return false;
+		}
+		return true;
 	}
 }
 
@@ -157,8 +180,12 @@ class Fabric2Pts {
 		]);
 	}
 
-	public static Polygon(o: Obstacle): Group {
-		const pointArr: number[][] = o.fabricPoints.map((p) => [p.x, p.y]);
+	public static PolygonFromObstacle(o: Obstacle): Group {
+		return Fabric2Pts.PolygonFabricPoints(o.fabricPoints);
+	}
+
+	public static PolygonFabricPoints(ps: fabric.Point[]): Group {
+		const pointArr: number[][] = ps.map((p) => [p.x, p.y]);
 		// TODO: I am assuming all obstacles are convex just because that's how I draw them.
 		// If that causes issues, uncomment the line below
 		return Group.fromArray(pointArr);
