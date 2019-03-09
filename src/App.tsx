@@ -6,7 +6,7 @@ import { Viewer } from './viewer/viewer';
 import { InputArea } from './ui/input-area';
 import Theme from './ui/theme';
 import { Header } from './ui/header';
-import { MakeGapStrings } from './planner/algorithm';
+import { Plan } from './planner/algorithm';
 import Model from './model/model-service';
 
 export class AppSteps {
@@ -48,7 +48,7 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	simulate(): void {
-		MakeGapStrings();
+		Plan();
 	}
 
 	getStepper(): JSX.Element {
