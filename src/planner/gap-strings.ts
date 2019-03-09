@@ -17,7 +17,7 @@ export class LabeledGap {
 	}
 }
 
-export function IsValidGapPair(gapPairs: Set<string>, g1: LabeledGap, g2: LabeledGap): boolean {
+export function GapPairExists(gapPairs: Set<string>, g1: LabeledGap, g2: LabeledGap): boolean {
 	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
 
@@ -37,7 +37,12 @@ export function GetGapPairs(): Set<string> {
 			}
 			const verts = [g1.robot.location, g2.robot.location, g2.gap.location, g1.gap.location];
 			// g1.robot.name !== g2.robot.name is there to prevent the end of the for loops
-			if (g1.robot.name !== g2.robot.name && g1.gap.isVisible(g2.gap) && Geometry.IsPolygonEmpty(verts)) {
+			if (
+				g1.robot.name !== g2.robot.name &&
+				!GapPairExists(s, g1, g2) &&
+				g1.gap.isVisible(g2.gap) &&
+				Geometry.IsPolygonEmpty(verts)
+			) {
 				s.add(MakeGapPairName(g1, g2));
 			}
 			g1.gap.deselect();
@@ -70,5 +75,15 @@ function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
 }
 
 function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
-	return `${g1.toString()}-${g2.toString()}`;
+	// Do this so gap pair always begins with R0
+	let t1: LabeledGap;
+	let t2: LabeledGap;
+	if (g1.robot.name < g2.robot.name) {
+		t1 = g1;
+		t2 = g2;
+	} else {
+		t1 = g2;
+		t2 = g1;
+	}
+	return `${t1.toString()}-${t2.toString()}`;
 }
