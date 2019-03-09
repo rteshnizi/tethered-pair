@@ -11,7 +11,32 @@ export interface GapString {
 	robotNames: string[];
 }
 
-export function MakeGapStrings(): GapString[] {
+export function IsValidGapPair(gapPairs: Set<string>, g1: string, g2: string): boolean {
+	return gapPairs.has(`${g1}-${g2}`) || gapPairs.has(`${g2}-${g1}`);
+}
+
+export function GetGapPairs(): Set<string> {
+	const s: Set<string> = new Set();
+	const processGapString = (gapString: GapString) => {
+		for(let i = 0; i < gapString.gapNames.length; i++) {
+			const g1 = gapString.gapNames[i];
+			let g2 = gapString.gapNames[i];
+			// go forward until you see a gap of the the other robot
+			for(let j = i + 1; j < gapString.gapNames.length; j++) {
+				g2 = gapString.gapNames[j];
+				if (gapString.robotNames[j] !== gapString.robotNames[i]) break;
+			}
+			if (g1 !== g2 && GetVertexByName(g1).isVisible(GetVertexByName(g2))) {
+				s.add(`${g1}-${g2}`);
+				s.add(`${g2}-${g1}`);
+			}
+		}
+	};
+	MakeGapStrings().forEach(processGapString);
+	return s;
+}
+
+function MakeGapStrings(): GapString[] {
 	forEach(Model.Instance.Robots, (robot) => {
 		robot.findGaps();
 	});
@@ -25,7 +50,7 @@ export function MakeGapStrings(): GapString[] {
 function MakeGapString(main: Robot, other: Robot): GapString {
 	const allGaps = GetAllGaps(main, other);
 	const edgeRef = new Edge(`${main.toString()}->${other.toString()}`, main, other);
-	const sortedGaps = Array.from(allGaps.keys()).map((name) => Model.Instance.AllEntities.get(name) as Vertex);
+	const sortedGaps = Array.from(allGaps.keys()).map((name) => GetVertexByName(name));
 	Geometry.SortPointsClockwiseByEdge(sortedGaps, edgeRef);
 	return CreateGapStringsFromSortedGaps(allGaps, sortedGaps);
 }
@@ -52,4 +77,9 @@ function CreateGapStringsFromSortedGaps(allGaps: Map<string, string>, sortedGaps
 		robotNames.push(allGaps.get(v.name) as string);
 	});
 	return { gapNames, robotNames };
+}
+
+/** You MUST be confident that the name is a valid Vertex, otherwise it will break the code */
+function GetVertexByName(name: string): Vertex {
+	return Model.Instance.AllEntities.get(name) as Vertex;
 }

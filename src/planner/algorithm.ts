@@ -1,6 +1,6 @@
-import { MakeGapStrings } from "./gap-strings";
+import { GetGapPairs } from "./gap-strings";
 
 export function Plan() {
-	const gapStrings = MakeGapStrings();
+	const gapStrings = GetGapPairs();
 	console.log(gapStrings);
 }
