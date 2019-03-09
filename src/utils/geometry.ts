@@ -36,6 +36,10 @@ export class Geometry {
 		points.sort((a, b) => a.angle - b.angle);
 	}
 
+	public static SortPointsClockwiseByEdge(points: fabric.Point[] | EntityWithLocation[], edge: Edge): void {
+		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => SortCriteria.ByAngle(a, b, edge));
+	}
+
 	// https://stackoverflow.com/a/45662872/750567
 	public static GetCenterFromPoints(points: fabric.Point[] | EntityWithLocation[]): fabric.Point {
 		if (points.length === 0) return new fabric.Point(0, 0);
@@ -109,6 +113,7 @@ class SortCriteria {
 		return pa[axis] - pb[axis];
 	}
 
+	// https://stackoverflow.com/a/7775459/750567
 	static ByAngle(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation, e: Edge): number {
 		const pa = GetFabricPointFromVertex(a);
 		const pb = GetFabricPointFromVertex(b);
@@ -123,12 +128,12 @@ class SortCriteria {
 		const detb = xp(m_dreference, db);
 
 		// nothing is less than zero degrees
-		if (detb === 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return 0;
+		if (detb === 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return 1;
 
 		const deta = xp(m_dreference, da);
 
 		// zero degrees is less than anything else
-		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return 1;
+		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return -1;
 
 		if (deta * detb >= 0) {
 			// both on same side of reference, compare to each other
