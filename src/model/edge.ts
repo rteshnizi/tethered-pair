@@ -5,7 +5,7 @@ import { Vertex } from './vertex';
 const STROKE_WIDTH = 2;
 const COLOR = 'DarkGreen';
 
-/** For Visualization ONLY */
+/** Represents a line segment */
 export class Edge extends Entity {
 	constructor(name: string, public v1: Vertex, public v2: Vertex) {
 		// https://github.com/fabricjs/fabric.js/blob/master/src/shapes/line.class.js#L67
