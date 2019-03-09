@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
 import { trim } from 'lodash';
+import { EntityWithLocation } from '../model/entity';
 
 /**
  * Disable all mouse interactions with FabricJs object
@@ -27,4 +28,9 @@ export function CreateFabricPoint(val: string): fabric.Point | null {
 	const y = Number(trim(parts[1]));
 	if (isNaN(x) || isNaN(y)) return null;
 	return new fabric.Point(x, y);
+}
+
+
+export function GetFabricPointFromVertex(v: EntityWithLocation | fabric.Point): fabric.Point {
+	return(v as fabric.Point).scalarAdd ? (v as fabric.Point) : (v as EntityWithLocation).location
 }

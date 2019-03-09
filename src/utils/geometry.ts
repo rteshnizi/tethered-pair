@@ -5,6 +5,7 @@ import { Obstacle } from '../model/obstacle';
 import { EntityWithLocation } from '../model/entity';
 import { Vertex } from '../model/vertex';
 import { Robot } from '../model/robot';
+import { GetFabricPointFromVertex } from './fabric';
 
 export type AngledPoint = fabric.Point & { angle?: number };
 
@@ -41,29 +42,19 @@ export class Geometry {
 		const lastInd = points.length - 1;
 		// Find min max to get center
 		// Sort from top to bottom
-		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => Geometry.SortCriteriaByAxis(a, b, 'y'));
+		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => SortCriteria.ByDimension(a, b, 'y'));
 		// Get center y
-		let p1 = Geometry.GetFabricPoint(points[0]);
-		let p2 = Geometry.GetFabricPoint(points[lastInd]);
+		let p1 = GetFabricPointFromVertex(points[0]);
+		let p2 = GetFabricPointFromVertex(points[lastInd]);
 		const cy = (p1.y + p2.y) / 2;
 		// Sort from right to left
-		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => Geometry.SortCriteriaByAxis(a, b, 'x'));
+		points.sort((a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation) => SortCriteria.ByDimension(a, b, 'x'));
 		// Get center x
-		p1 = Geometry.GetFabricPoint(points[0]);
-		p2 = Geometry.GetFabricPoint(points[lastInd]);
+		p1 = GetFabricPointFromVertex(points[0]);
+		p2 = GetFabricPointFromVertex(points[lastInd]);
 		const cx = (p1.x + p2.x) / 2;
 
 		return new fabric.Point(cx, cy);
-	}
-
-	private static GetFabricPoint(p: fabric.Point | EntityWithLocation): fabric.Point {
-		return(p as fabric.Point).scalarAdd ? (p as fabric.Point) : (p as EntityWithLocation).location
-	}
-
-	private static SortCriteriaByAxis(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation, axis: 'y' | 'x'): number {
-		const pa = Geometry.GetFabricPoint(a);
-		const pb = Geometry.GetFabricPoint(b);
-		return pa[axis] - pb[axis];
 	}
 
 	/**
@@ -108,6 +99,45 @@ export class Geometry {
 
 	public static GetEpsilonVector(start: Vertex, end: Vertex): fabric.Point {
 		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
+	}
+}
+
+class SortCriteria {
+	static ByDimension(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation, axis: 'y' | 'x'): number {
+		const pa = GetFabricPointFromVertex(a);
+		const pb = GetFabricPointFromVertex(b);
+		return pa[axis] - pb[axis];
+	}
+
+	static ByAngle(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation): number {
+	// 	let m_origin: fabric.Point;
+	// 	let m_dreference: fabric.Point;
+
+	// 	// z-coordinate of cross-product, aka determinant
+	// 	const xp = (p1: fabric.Point, p2: fabric.Point) => p1.x * p2.y - p1.y * p2.x;
+	// public:
+	// 	angle_sort(const point origin, const point reference) : m_origin(origin), m_dreference(reference - origin) {}
+	// 	bool operator()(const point a, const point b) const
+	// 	{
+	// 		const point da = a - m_origin, db = b - m_origin;
+	// 		const double detb = xp(m_dreference, db);
+
+	// 		// nothing is less than zero degrees
+	// 		if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
+
+	// 		const double deta = xp(m_dreference, da);
+
+	// 		// zero degrees is less than anything else
+	// 		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
+
+	// 		if (deta * detb >= 0) {
+	// 			// both on same side of reference, compare to each other
+	// 			return xp(da, db) > 0;
+	// 		}
+
+	// 		// vectors "less than" zero degrees are actually large, near 2 pi
+	// 		return deta > 0;
+		return 0
 	}
 }
 
