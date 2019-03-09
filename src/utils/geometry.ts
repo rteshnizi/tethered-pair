@@ -110,34 +110,32 @@ class SortCriteria {
 	}
 
 	static ByAngle(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation): number {
-	// 	let m_origin: fabric.Point;
-	// 	let m_dreference: fabric.Point;
+		const pa =
+		let m_origin: fabric.Point;
+		let m_dreference: fabric.Point;
 
-	// 	// z-coordinate of cross-product, aka determinant
-	// 	const xp = (p1: fabric.Point, p2: fabric.Point) => p1.x * p2.y - p1.y * p2.x;
-	// public:
-	// 	angle_sort(const point origin, const point reference) : m_origin(origin), m_dreference(reference - origin) {}
-	// 	bool operator()(const point a, const point b) const
-	// 	{
-	// 		const point da = a - m_origin, db = b - m_origin;
-	// 		const double detb = xp(m_dreference, db);
+		// z-coordinate of cross-product, aka determinant
+		const xp = (p1: fabric.Point, p2: fabric.Point) => p1.x * p2.y - p1.y * p2.x;
+		angle_sort(const point origin, const point reference) : m_origin(origin), m_dreference(reference - origin) {}
 
-	// 		// nothing is less than zero degrees
-	// 		if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
+		const point da = a - m_origin, db = b - m_origin;
+		const double detb = xp(m_dreference, db);
 
-	// 		const double deta = xp(m_dreference, da);
+		// nothing is less than zero degrees
+		if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
 
-	// 		// zero degrees is less than anything else
-	// 		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
+		const double deta = xp(m_dreference, da);
 
-	// 		if (deta * detb >= 0) {
-	// 			// both on same side of reference, compare to each other
-	// 			return xp(da, db) > 0;
-	// 		}
+		// zero degrees is less than anything else
+		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
 
-	// 		// vectors "less than" zero degrees are actually large, near 2 pi
-	// 		return deta > 0;
-		return 0
+		if (deta * detb >= 0) {
+			// both on same side of reference, compare to each other
+			return xp(da, db) > 0;
+		}
+
+		// vectors "less than" zero degrees are actually large, near 2 pi
+		return deta > 0;
 	}
 }
 
