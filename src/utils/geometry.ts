@@ -109,33 +109,34 @@ class SortCriteria {
 		return pa[axis] - pb[axis];
 	}
 
-	static ByAngle(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation): number {
-		const pa =
-		let m_origin: fabric.Point;
-		let m_dreference: fabric.Point;
+	static ByAngle(a: fabric.Point | EntityWithLocation, b: fabric.Point | EntityWithLocation, e: Edge): number {
+		const pa = GetFabricPointFromVertex(a);
+		const pb = GetFabricPointFromVertex(b);
+		let m_origin: fabric.Point = e.v1.location;
+		let m_dreference: fabric.Point = e.v2.location;
 
 		// z-coordinate of cross-product, aka determinant
 		const xp = (p1: fabric.Point, p2: fabric.Point) => p1.x * p2.y - p1.y * p2.x;
-		angle_sort(const point origin, const point reference) : m_origin(origin), m_dreference(reference - origin) {}
 
-		const point da = a - m_origin, db = b - m_origin;
-		const double detb = xp(m_dreference, db);
+		const da = pa.subtract(m_origin)
+		const db = pb.subtract(m_origin);
+		const detb = xp(m_dreference, db);
 
 		// nothing is less than zero degrees
-		if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
+		if (detb === 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return 0;
 
-		const double deta = xp(m_dreference, da);
+		const deta = xp(m_dreference, da);
 
 		// zero degrees is less than anything else
-		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
+		if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return 1;
 
 		if (deta * detb >= 0) {
 			// both on same side of reference, compare to each other
-			return xp(da, db) > 0;
+			return xp(da, db);
 		}
 
 		// vectors "less than" zero degrees are actually large, near 2 pi
-		return deta > 0;
+		return deta;
 	}
 }
 
