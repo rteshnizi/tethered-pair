@@ -4,7 +4,7 @@ import { Vertex } from "../model/vertex";
 import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
 
-/** String is the key obtain by calling `MakeGapPairName()` */
+/** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
 
 /** use this to identify which gap belongs to which robot */
@@ -15,11 +15,26 @@ export interface GapString {
 
 /** I am das */
 export class GapPair {
-	constructor(public first: LabeledGap, public second: LabeledGap) { }
+	public first: LabeledGap;
+	public second: LabeledGap;
+	constructor(g1: LabeledGap, g2: LabeledGap) {
+		if (g1.robot.name < g2.robot.name) {
+			this.first = g1;
+			this.second = g2;
+		} else {
+			this.first = g2;
+			this.second = g1;
+		}
+	}
 
 	public toString(): string {
-		return `(${this.first.toString()},${this.second.toString()})`;
+		return GapPairToString(this.first, this.second);
 	}
+}
+
+/** This function is not safe to use as it assumes the correct ordering. Use `MakeGapPairName()` instead. */
+function GapPairToString(first: LabeledGap, second: LabeledGap): string {
+	return `${first.toString()}-${second.toString()}`;
 }
 
 export class LabeledGap {
@@ -56,7 +71,8 @@ export function GetGapPairs(): Map<string, GapPair> {
 				g1.gap.isVisible(g2.gap) &&
 				Geometry.IsPolygonEmpty(verts)
 			) {
-				pairs.set(MakeGapPairName(g1, g2), new GapPair(g1, g2));
+				const pair = new GapPair(g1, g2);
+				pairs.set(pair.toString(), pair);
 			}
 			g1.gap.deselect();
 			g2.gap.deselect();
@@ -86,7 +102,7 @@ function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
 	return all;
 }
 
-// TODO: Make g1 and g2 swap
+/** This mimics `GapPair.toString()` */
 function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 	// Do this so gap pair always begins with R0
 	let t1: LabeledGap;
@@ -98,17 +114,15 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 		t1 = g2;
 		t2 = g1;
 	}
-	return `${t1.toString()}-${t2.toString()}`;
+	return GapPairToString(t1, t2);
 }
 
-export function MakeGapTreeNodes(gapPairs: GapPairs): Map<string, GapTreeNode> {
-	const children = new Map<string, GapTreeNode>();
+export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
 	gapPairs.forEach((gapPair, key) => {
-		if (!children.has(gapPair.first.toString())) {
-			children.set(gapPair.first.toString(), new GapTreeNode(gapPair.first));
+		const gtn = new GapTreeNode(gapPair.first);
+		if (!parent.isChild(gapPair.first)) {
+			parent.addChild(gtn);
 		}
-		const ch = children.get(gapPair.first.toString()) as GapTreeNode;
-		ch.children.set(gapPair.second.toString(), new GapTreeNode(gapPair.second));
+		gtn.addChild(new GapTreeNode(gapPair.second));
 	});
-	return children;
 }
