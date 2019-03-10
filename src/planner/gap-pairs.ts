@@ -2,7 +2,10 @@ import Model from "../model/model-service";
 import { Geometry } from "../utils/geometry";
 import { Vertex } from "../model/vertex";
 import { Robot } from "../model/robot";
-import { Edge } from "../model/edge";
+import { GapTreeNode } from "../ds/gap-tree";
+
+/** String is the key obtain by calling `MakeGapPairName()` */
+export type GapPairs = Map<string, GapPair>;
 
 /** use this to identify which gap belongs to which robot */
 export interface GapString {
@@ -10,19 +13,28 @@ export interface GapString {
 	robotNames: string[];
 }
 
+export class GapPair {
+	constructor(public first: LabeledGap, public second: LabeledGap) { }
+
+	public toString(): string {
+		return `(${this.first.toString()},${this.second.toString()})`;
+	}
+}
+
 export class LabeledGap {
 	constructor(public gap: Vertex, public robot: Robot) { }
-	toString() {
+
+	public toString(): string {
 		return `(${this.robot.name},${this.gap.name})`;
 	}
 }
 
-export function GapPairExists(gapPairs: Set<string>, g1: LabeledGap, g2: LabeledGap): boolean {
+export function GapPairExists(gapPairs: Map<string, GapPair>, g1: LabeledGap, g2: LabeledGap): boolean {
 	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
 
-export function GetGapPairs(): Set<string> {
-	const s: Set<string> = new Set();
+export function GetGapPairs(): Map<string, GapPair> {
+	const pairs: Map<string, GapPair> = new Map();
 	const processGapString = (gapString: LabeledGap[]) => {
 		for(let i = 0; i < gapString.length; i++) {
 			const g1 = gapString[i];
@@ -39,18 +51,18 @@ export function GetGapPairs(): Set<string> {
 			// g1.robot.name !== g2.robot.name is there to prevent the end of the for loops
 			if (
 				g1.robot.name !== g2.robot.name &&
-				!GapPairExists(s, g1, g2) &&
+				!GapPairExists(pairs, g1, g2) &&
 				g1.gap.isVisible(g2.gap) &&
 				Geometry.IsPolygonEmpty(verts)
 			) {
-				s.add(MakeGapPairName(g1, g2));
+				pairs.set(MakeGapPairName(g1, g2), new GapPair(g1, g2));
 			}
 			g1.gap.deselect();
 			g2.gap.deselect();
 		}
 	};
 	MakeGapStrings().forEach(processGapString);
-	return s;
+	return pairs;
 }
 
 function MakeGapStrings(): LabeledGap[][] {
@@ -64,7 +76,6 @@ function MakeGapStrings(): LabeledGap[][] {
 }
 
 function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
-	let edgeRef = new Edge(`${main.toString()}->${other.toString()}`, main, other);
 	const all: LabeledGap[] = [];
 	const addGap = (gap: Vertex, robot: Robot) => {
 		all.push(new LabeledGap(gap, robot));
@@ -86,4 +97,12 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 		t2 = g1;
 	}
 	return `${t1.toString()}-${t2.toString()}`;
+}
+
+function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
+	const children = new Set<GapTreeNode>();
+	gapPairs.forEach((gapPair, key) => {
+		if (children.has)
+		children.add(new GapTreeNode(gapPair.first, parent));
+	});
 }
