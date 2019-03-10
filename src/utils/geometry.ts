@@ -76,7 +76,7 @@ export class Geometry {
 		// To increase performance, check if the bounding boxes intersect first, using fabricJs
 		if (!e.shape.intersectsWithObject(o.shape)) return false;
 
-		// Now that we know they are intersecting using Pts for more complicated calculation
+		// Now that we know they are intersecting, use Pts for more complicated calculation
 		const polygon = Fabric2Pts.PolygonFromObstacle(o);
 		const line = Fabric2Pts.Line(e);
 		const intersections = Line.intersectPolygon2D(line, polygon);
