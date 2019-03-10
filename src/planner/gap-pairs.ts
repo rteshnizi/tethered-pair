@@ -13,6 +13,7 @@ export interface GapString {
 	robotNames: string[];
 }
 
+/** I am das */
 export class GapPair {
 	constructor(public first: LabeledGap, public second: LabeledGap) { }
 
@@ -85,6 +86,7 @@ function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
 	return all;
 }
 
+// TODO: Make g1 and g2 swap
 function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 	// Do this so gap pair always begins with R0
 	let t1: LabeledGap;
@@ -99,10 +101,14 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 	return `${t1.toString()}-${t2.toString()}`;
 }
 
-function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
-	const children = new Set<GapTreeNode>();
+export function MakeGapTreeNodes(gapPairs: GapPairs): Map<string, GapTreeNode> {
+	const children = new Map<string, GapTreeNode>();
 	gapPairs.forEach((gapPair, key) => {
-		if (children.has)
-		children.add(new GapTreeNode(gapPair.first, parent));
+		if (!children.has(gapPair.first.toString())) {
+			children.set(gapPair.first.toString(), new GapTreeNode(gapPair.first));
+		}
+		const ch = children.get(gapPair.first.toString()) as GapTreeNode;
+		ch.children.set(gapPair.second.toString(), new GapTreeNode(gapPair.second));
 	});
+	return children;
 }
