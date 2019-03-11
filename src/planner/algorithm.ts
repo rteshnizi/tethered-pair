@@ -2,11 +2,12 @@ import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
 import { GapTreeNode, GTNVisitState } from "../ds/gap-tree";
 import Model from "../model/model-service";
 
-export function Plan() {
+export function Plan(): void {
 	Model.Instance.Robots[0].reset();
 	Model.Instance.Robots[1].reset();
 	const root = CreateGapTreeRoot();
 	VisitLayer(root);
+	console.log(root);
 }
 
 function VisitLayer(node: GapTreeNode): void {
@@ -27,6 +28,8 @@ function VisitLayer(node: GapTreeNode): void {
 }
 
 function Visit(node: GapTreeNode): void {
+	// Search termination condition
+	if (IsAtDestination(node)) return;
 	const gapPairs = GetGapPairs();
 	// console.log(gapPairs);
 
@@ -38,4 +41,10 @@ function CreateGapTreeRoot(): GapTreeNode {
 	const root = new GapTreeNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0]));
 	root.addChild(new GapTreeNode(new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1])));
 	return root;
+}
+
+/** When we are visiting the gap tree node belongs to R1 and the parent belongs to R0 */
+function IsAtDestination(node: GapTreeNode): boolean {
+	// Since we are at R1, there always is a parent
+	return node.isAtDestination() && node.parent!.isAtDestination();
 }
