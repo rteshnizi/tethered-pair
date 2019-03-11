@@ -184,7 +184,7 @@ class SortCriteria {
 	}
 }
 
-class Fabric2Pts {
+export class Fabric2Pts {
 	public static Pt(p: fabric.Point): PtLike {
 		return [p.x, p.y];
 	}
