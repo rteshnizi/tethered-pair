@@ -4,6 +4,7 @@ import { Robot } from "./robot";
 import { Vertex } from "./vertex";
 import { Destination } from "./destination";
 import { forEach } from "lodash";
+import { Geometry, Fabric2Pts } from "../utils/geometry";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
@@ -54,6 +55,26 @@ export default class Model {
 			});
 		}
 		return this.vertices;
+	}
+
+	/**
+	 * This method returns the vertices of the obstacles that are inside or partially inside the bounding box
+	 * made by the two robot and their respective destination.
+	 */
+	public getVerticesInBoundingBox(): Vertex[] {
+		const boundingBoxPoints = [
+			this.Robots[0].location,
+			this.Robots[1].location,
+			this.Robots[1].Destination!.location,
+			this.Robots[0].Destination!.location,
+		];
+		const poly = Fabric2Pts.PolygonFabricPoints(boundingBoxPoints);
+		let verts: Vertex[] = [];
+		forEach(this.Obstacles, (o) => {
+			o.fabricPoints.some((p) => Geometry.IsPointInsidePolygon(p, poly));
+			verts = verts.concat(o.vertices);
+		});
+		return verts;
 	}
 
 	private constructor() {
