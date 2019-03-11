@@ -25,7 +25,7 @@ export class GapTreeNode {
 		this._children.set(node.val.toString(), node);
 	}
 
-	public isChild(gap: LabeledGap): boolean {
-		return this._children.has(gap.toString());
+	public isChild(gap: LabeledGap): GapTreeNode | undefined {
+		return this._children.get(gap.toString());
 	}
 }
