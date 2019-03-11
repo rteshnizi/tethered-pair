@@ -1,11 +1,5 @@
 import { LabeledGap } from "../planner/gap-pairs";
 
-export enum GTNVisitState {
-	UNVISITED,
-	VISITING,
-	VISITED,
-}
-
 export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
 	public get children(): GapTreeNode[] { return Array.from(this._children.values()); }
@@ -13,11 +7,8 @@ export class GapTreeNode {
 	private _parent?: GapTreeNode;
 	public get parent(): GapTreeNode | undefined { return this._parent; }
 
-	public visitState: GTNVisitState;
-
 	constructor(public val: LabeledGap) {
 		this._children = new Map();
-		this.visitState = GTNVisitState.UNVISITED;
 	}
 
 	public addChild(node: GapTreeNode): void {
