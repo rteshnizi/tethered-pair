@@ -50,8 +50,8 @@ export class Robot extends Vertex {
 		const checkGap = (vert: Vertex) => {
 			if (this.hasVisited(vert)) return; // Don't fall into a cycle
 			if (!vert.isVisible(this)) return;
-			if (!vert.options.owner) return; // Has to be an obstacle vertex
-			if (!Geometry.IsVertexAGap(this, vert, vert.options.owner)) return;
+			// If it doesn't have owner, then it's a destination in which case we don't need to check for being a gap
+			if (vert.options.owner && !Geometry.IsVertexAGap(this, vert, vert.options.owner)) return;
 
 			// this._renderedGaps.push(new Gap(`${this.name}-${this.gaps.length + 1}`, vert.location, { robot: this }));
 			this.gaps.push(vert);
@@ -61,7 +61,7 @@ export class Robot extends Vertex {
 		}
 		// If already at destination don't look for more gaps because where are you gonna go silly?
 		if (!this.location.eq(this.Destination!.location)) {
-			Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
+			Model.Instance.getVerticesInBoundingBox().forEach((vert) => { checkGap(vert); });
 		}
 	}
 
