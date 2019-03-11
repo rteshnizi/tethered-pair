@@ -13,7 +13,7 @@ export interface GapString {
 	robotNames: string[];
 }
 
-/** I am das */
+/** I am */
 export class GapPair {
 	public first: LabeledGap;
 	public second: LabeledGap;
@@ -49,7 +49,31 @@ export function GapPairExists(gapPairs: Map<string, GapPair>, g1: LabeledGap, g2
 	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
 
+/** This implementation is more similar to the gap Matrix */
 export function GetGapPairs(): Map<string, GapPair> {
+	const pairs: Map<string, GapPair> = new Map();
+	const r0 = Model.Instance.Robots[0];
+	const r1 = Model.Instance.Robots[1];
+
+	r0.findGaps();
+	r1.findGaps();
+	for (const g1 of r0.gaps) {
+		for (const g2 of r1.gaps) {
+			const verts = [r0.location, g1.location, g2.location, r1.location];
+			if (!Geometry.IsPolygonEmpty(verts)) continue;
+			const l1 = new LabeledGap(g1, r0);
+			const l2 = new LabeledGap(g2, r1);
+			if (!GapPairExists(pairs, l1, l2)) {
+				const pair = new GapPair(l1, l2);
+				pairs.set(pair.toString(), pair);
+			}
+		}
+	}
+	return pairs;
+}
+
+// FIXME: Buggy --> This method is incorrect, for the time being we use a O(n^2) solution
+export function _GetGapPairs(): Map<string, GapPair> {
 	const pairs: Map<string, GapPair> = new Map();
 	const processGapString = (gapString: LabeledGap[]) => {
 		for(let i = 0; i < gapString.length; i++) {
@@ -118,7 +142,7 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 }
 
 export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
-	gapPairs.forEach((gapPair, key) => {
+	gapPairs.forEach((gapPair) => {
 		const gtn = new GapTreeNode(gapPair.first);
 		if (!parent.isChild(gapPair.first)) {
 			parent.addChild(gtn);
