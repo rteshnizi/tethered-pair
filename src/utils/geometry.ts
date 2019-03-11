@@ -73,11 +73,20 @@ export class Geometry {
 	 * @param o The Obstacle (Convex Polygon)
 	 */
 	public static IntersectEdgeAndObstacle(e: Edge, o: Obstacle): boolean {
+		if (o.isMyEdge(e)) return false;
+
 		// To increase performance, check if the bounding boxes intersect first, using fabricJs
 		if (!e.shape.intersectsWithObject(o.shape)) return false;
 
 		// Now that we know they are intersecting, use Pts for more complicated calculation
 		const polygon = Fabric2Pts.PolygonFromObstacle(o);
+
+		// THIS IS FOR A SPECIFIC BUG
+		// WE ASSUME OBSTACLES ARE CONVEX
+		// If the midpoint of the edge is inside the obstacle then, this line is connecting two vertices of the obstacle
+		const mid = e.v1.location.midPointFrom(e.v2.location);
+		if (Geometry.IsPointInsidePolygon(mid, polygon)) return true;
+
 		const line = Fabric2Pts.Line(e);
 		const intersections = Line.intersectPolygon2D(line, polygon);
 		if (!intersections || intersections.length === 0) return false;
@@ -94,17 +103,24 @@ export class Geometry {
 		return false;
 	}
 
+	public static IsPointInsidePolygon(p: fabric.Point, poly: Group): boolean {
+		return Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(p));
+	}
+
 	/**
-	 * Gap is a discontinuity is the distance. I test this by pushing the obstacle vertex slightly in the same direction
+	 * We check two conditions:
+	 * 1. If the robot is already there, it's not a gap
+	 * 2. Gap is a discontinuity is the distance. I test this by pushing the obstacle vertex slightly in the same direction
 	 * as the visibility edge and see if it falls inside the Obstacle.
 	 * That is, by extending the edge slightly and see if the end of the edge is inside the obstacle (the owner of the vertex)
 	 */
 	public static IsVertexAGap(r: Robot, v: Vertex, o: Obstacle): boolean {
+		if (r.location.eq(v.location)) return false;
 		// We only need to test this for the vertex whose owner is the given Obstacle
 		const vec = Geometry.GetEpsilonVector(r, v);
 		const moved = v.location.add(vec);
 		const poly = Fabric2Pts.PolygonFromObstacle(o);
-		return !Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(moved));
+		return !Geometry.IsPointInsidePolygon(moved, poly);
 	}
 
 	public static GetEpsilonVector(start: Vertex, end: Vertex): fabric.Point {
