@@ -39,15 +39,15 @@ export class Vertex extends EntityWithLocation {
 		let i = 0;
 		for(; i < numObs; i++) {
 			const o = Model.Instance.Obstacles[i];
-			if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
-			o.select();
+			// if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
+			// o.select();
 			if (Geometry.IntersectEdgeAndObstacle(edge, o)) {
 				isVis = false;
 				break;
 			}
 		}
 		edge.remove();
-		Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
+		// Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
 		return isVis;
 	}
 
