@@ -1,20 +1,20 @@
 import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
-import { GapTreeNode, GTNVisitState } from "../ds/gap-tree";
+import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
+import { VertexVisitState } from "../model/vertex";
 
 export function Plan(): void {
-	Model.Instance.Robots[0].reset();
-	Model.Instance.Robots[1].reset();
+	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
 	VisitLayer(root);
 	console.log(root);
 }
 
 function VisitLayer(node: GapTreeNode): void {
-	node.visitState = GTNVisitState.VISITING;
 	const originalLocation = node.val.robot.location;
 	node.val.robot.location = node.val.gap.location;
-	node.val.robot.addVertToVisited(node.val.gap);
+	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITING);
+	// node.val.robot.addVertToVisited(node.val.gap);
 	// Only search for gaps when we have decided for both robots
 	if (node.val.robot.name === Model.Instance.Robots[1].name) {
 		Visit(node);
@@ -22,9 +22,13 @@ function VisitLayer(node: GapTreeNode): void {
 	for (let n of node.children) {
 		VisitLayer(n);
 	}
-	node.visitState = GTNVisitState.VISITED;
 	node.val.robot.location = originalLocation;
-	node.val.robot.removeVertFromVisited(node.val.gap);
+	// FIXME: This does not have infinite loop but it eliminates solution
+	// Tentative solution is to make a dictionary of all seen gaps and their associated GTN
+	// Then if we see it again and this time the cost is lower, we update the parent to the current node
+	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITED);
+	// node.val.gap.setVisitState(node.val.robot, VertexVisitState.UNVISITED);
+	// node.val.robot.removeVertFromVisited(node.val.gap);
 }
 
 function Visit(node: GapTreeNode): void {

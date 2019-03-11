@@ -1,6 +1,6 @@
 import Model from "../model/model-service";
 import { Geometry } from "../utils/geometry";
-import { Vertex } from "../model/vertex";
+import { Vertex, VertexVisitState } from "../model/vertex";
 import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
 
