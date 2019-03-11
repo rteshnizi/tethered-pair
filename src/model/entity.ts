@@ -28,6 +28,10 @@ export abstract class Entity {
 		}
 	}
 
+	public reset(): void {
+		console.log("RESET NOT OVERRIDEN");
+	}
+
 	public isSelected(): boolean {
 		return this.prevStrokeWidth === undefined || !isNaN(this.prevStrokeWidth);
 	}
@@ -72,8 +76,25 @@ export abstract class Entity {
 export abstract class EntityWithLocation extends Entity {
 	/** The value in angle is meaningless outside of the context it is set */
 	public angle: number;
-	constructor(name: string, public location: fabric.Point, public color: string, shape: fabric.Object, renderInCtor: boolean) {
+	protected _location: fabric.Point;
+	public set location(l: fabric.Point) {
+		const diff = l.subtract(this._location);
+		const deltaTop = diff.y;
+		const deltaLeft = diff.x;
+		const currentTop = this.shape.top ? this.shape.top : 0; // The zero case should never happen, it's just here for TS compiler
+		const currentLeft = this.shape.left ? this.shape.left : 0;
+		this.shape.set({
+			top: currentTop + deltaTop,
+			left: currentLeft + deltaLeft,
+		});
+		this._location = l;
+		Renderer.Instance.render(true);
+	}
+	public get location(): fabric.Point { return this._location; }
+
+	constructor(name: string, location: fabric.Point, public color: string, shape: fabric.Object, renderInCtor: boolean) {
 		super(name, color, shape, renderInCtor);
 		this.angle = NaN;
+		this._location = location;
 	}
 };

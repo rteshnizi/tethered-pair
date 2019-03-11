@@ -37,22 +37,26 @@ export class Vertex extends EntityWithLocation {
 		const edge = new Edge(`${this.name}<->${other.name}`, this, other);
 		const numObs = Object.keys(Model.Instance.Obstacles).length;
 		let i = 0;
-		for(; i < numObs; i++) {
+		for (; i < numObs; i++) {
 			const o = Model.Instance.Obstacles[i];
-			if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
-			o.select();
+			// if (i > 0) Model.Instance.Obstacles[i - 1].deselect();
+			// o.select();
 			if (Geometry.IntersectEdgeAndObstacle(edge, o)) {
 				isVis = false;
 				break;
 			}
 		}
 		edge.remove();
-		Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
+		// Model.Instance.Obstacles[i === numObs ? i - 1 : i].deselect();
 		return isVis;
 	}
 
 	isOwnedBy(o: Obstacle): boolean {
-		return !!this.options.owner && (o.name === this.options.owner.name);
+		// fast check
+		if (!!this.options.owner && (o.name === this.options.owner.name)) return true;
+		// detailed check
+		// @ts-ignore @types is wrong for these functions
+		return o.fabricPoints.some((p) => this.location.eq(p));
 	}
 
 	canAnchor(d1: Destination, d2: Destination, cableLength: number): boolean {
