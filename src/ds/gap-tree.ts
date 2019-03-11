@@ -28,4 +28,9 @@ export class GapTreeNode {
 	public isChild(gap: LabeledGap): GapTreeNode | undefined {
 		return this._children.get(gap.toString());
 	}
+
+	public isAtDestination(): boolean {
+		// @ts-ignore @types is wrong for these functions
+		return this.val.gap.location.eq(this.val.robot.Destination!.location);
+	}
 }
