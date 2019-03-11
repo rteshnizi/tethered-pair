@@ -5,9 +5,16 @@ import Model from './model-service';
 import { Edge } from './edge';
 import { Geometry } from '../utils/geometry';
 import { Destination } from './destination';
+import { Robot } from './robot';
 
 const DEFAULT_FILL = 'rgba(0,0,0,0)';
 const ANCHOR_FILL = 'LightGreen';
+
+export enum VertexVisitState {
+	UNVISITED,
+	VISITING,
+	VISITED,
+}
 
 export interface VertexOption {
 	owner?: Obstacle;
@@ -20,6 +27,10 @@ export interface VertexOption {
 export class Vertex extends EntityWithLocation {
 	private anchorChecked = false;
 	private _canAnchor: boolean;
+	/** One State per Robot */
+	private _visitState: { [robotName: string]: VertexVisitState };
+	public setVisitState(r: Robot, state: VertexVisitState): void { this._visitState[r.name] = state; }
+	public getVisitState(r: Robot): VertexVisitState { return this._visitState[r.name]; }
 
 	constructor(name: string, location: fabric.Point, public options: VertexOption) {
 		super(name, location, options.color, new fabric.Circle({
@@ -30,6 +41,7 @@ export class Vertex extends EntityWithLocation {
 			stroke: options.color
 		}), true);
 		this._canAnchor = false;
+		this._visitState = {};
 	}
 
 	isVisible(other: Vertex): boolean {
