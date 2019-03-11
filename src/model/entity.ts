@@ -28,6 +28,10 @@ export abstract class Entity {
 		}
 	}
 
+	public reset(): void {
+		console.log("RESET NOT OVERRIDEN");
+	}
+
 	public isSelected(): boolean {
 		return this.prevStrokeWidth === undefined || !isNaN(this.prevStrokeWidth);
 	}
