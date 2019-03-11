@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { Obstacle } from "./obstacle";
 import { Robot } from "./robot";
-import { Vertex } from "./vertex";
+import { Vertex, VertexVisitState } from "./vertex";
 import { Destination } from "./destination";
 import { forEach } from "lodash";
 import { Geometry, Fabric2Pts } from "../utils/geometry";
@@ -107,5 +107,15 @@ export default class Model {
 			this.obstacles[ind].remove();
 			delete this.obstacles[ind];
 		}
+	}
+
+	public reset(): void {
+		forEach(this.Robots, (r) => {
+			r.reset();
+			r.Destination!.setVisitState(r, VertexVisitState.UNVISITED);
+			this.Vertices.forEach((v) => {
+				v.setVisitState(r, VertexVisitState.UNVISITED);
+			});
+		});
 	}
 }
