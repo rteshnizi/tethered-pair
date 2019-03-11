@@ -143,8 +143,9 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 
 export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
 	gapPairs.forEach((gapPair) => {
-		const gtn = new GapTreeNode(gapPair.first);
-		if (!parent.isChild(gapPair.first)) {
+		let gtn = parent.isChild(gapPair.first);
+		if (!gtn) {
+			gtn = new GapTreeNode(gapPair.first);
 			parent.addChild(gtn);
 		}
 		gtn.addChild(new GapTreeNode(gapPair.second));

@@ -1,17 +1,37 @@
 import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
-import { Vertex } from "../model/vertex";
-import { GapTreeNode } from "../ds/gap-tree";
+import { GapTreeNode, GTNVisitState } from "../ds/gap-tree";
 import Model from "../model/model-service";
 
 export function Plan() {
+	Model.Instance.Robots[0].reset();
+	Model.Instance.Robots[1].reset();
 	const root = CreateGapTreeRoot();
-	const path0: Vertex[] = [];
-	const path1: Vertex[] = [];
-	const gapPairs = GetGapPairs();
+	VisitLayer(root);
+}
 
+function VisitLayer(node: GapTreeNode): void {
+	node.visitState = GTNVisitState.VISITING;
+	const originalLocation = node.val.robot.location;
+	node.val.robot.location = node.val.gap.location;
+	node.val.robot.addVertToVisited(node.val.gap);
+	// Only search for gaps when we have decided for both robots
+	if (node.val.robot.name === Model.Instance.Robots[1].name) {
+		Visit(node);
+	}
+	for (let n of node.children) {
+		VisitLayer(n);
+	}
+	node.visitState = GTNVisitState.VISITED;
+	node.val.robot.location = originalLocation;
+	node.val.robot.removeVertFromVisited(node.val.gap);
+}
+
+function Visit(node: GapTreeNode): void {
+	const gapPairs = GetGapPairs();
 	// console.log(gapPairs);
-	MakeGapTreeNodes(gapPairs, root.children[0]);
-	console.log(root);
+
+	MakeGapTreeNodes(gapPairs, node);
+	// console.log(node);
 }
 
 function CreateGapTreeRoot(): GapTreeNode {

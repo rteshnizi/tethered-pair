@@ -12,6 +12,9 @@ const RENDER_RADIUS = 5;
 export class Robot extends Vertex {
 	private _renderedGaps: Gap[];
 	public gaps: Vertex[];
+	/** Holds the `names`s of the visited vertices */
+	private visited: Set<string>;
+
 	private _destination: Destination | null;
 	public set Destination(d: Destination | null) {
 		if (this._destination) {
@@ -19,9 +22,8 @@ export class Robot extends Vertex {
 		}
 		this._destination = d;
 	}
-	public get Destination(): Destination | null {
-		return this._destination;
-	}
+	public get Destination(): Destination | null { return this._destination; }
+
 
 	constructor(name: string, public location: fabric.Point, color: string) {
 		super(name, location, {
@@ -32,21 +34,47 @@ export class Robot extends Vertex {
 		this._destination = null;
 		this.gaps = [];
 		this._renderedGaps = [];
+		this.visited = new Set();
+	}
+
+	public reset(): void {
+		this.gaps = [];
+		this.visited.clear();
+		this.clearGaps();
+		this._renderedGaps = [];
 	}
 
 	public findGaps(): void {
 		this.clearGaps();
 		this.gaps = [];
 		const checkGap = (vert: Vertex) => {
-			if (vert.isVisible(this) && vert.options.owner && Geometry.IsVertexAGap(this, vert, vert.options.owner)) {
-				this._renderedGaps.push(new Gap(`${this.name}-${this.gaps.length + 1}`, vert.location, { robot: this }));
-				this.gaps.push(vert);
-			}
+			if (this.hasVisited(vert)) return; // Don't fall into a cycle
+			if (!vert.isVisible(this)) return;
+			if (!vert.options.owner) return; // Has to be an obstacle vertex
+			if (!Geometry.IsVertexAGap(this, vert, vert.options.owner)) return;
+
+			// this._renderedGaps.push(new Gap(`${this.name}-${this.gaps.length + 1}`, vert.location, { robot: this }));
+			this.gaps.push(vert);
 		};
 		if (this.Destination) {
 			checkGap(this.Destination);
 		}
-		Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
+		// If already at destination don't look for more gaps because where are you gonna go silly?
+		if (!this.location.eq(this.Destination!.location)) {
+			Model.Instance.Vertices.forEach((vert) => { checkGap(vert); });
+		}
+	}
+
+	public addVertToVisited(v: Vertex): void {
+		this.visited.add(v.name);
+	}
+
+	public removeVertFromVisited(v: Vertex): void {
+		this.visited.delete(v.name);
+	}
+
+	public hasVisited(v: Vertex): boolean {
+		return this.visited.has(v.name);
 	}
 
 	public renderGaps(): void {
