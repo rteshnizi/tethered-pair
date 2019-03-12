@@ -13,7 +13,7 @@ export class SimulationInfoState {
 		this.expandedNodes = 0;
 		this.totalNodes = 0;
 		this.iteration = 0;
-		this.maxIterations = `${Model.Instance.DEBUG_HARD_ITERATION_LIMIT}`;
+		this.maxIterations = `${Model.Instance.CONSTANTS.ITERATION_LIMIT}`;
 	}
 }
 
@@ -38,7 +38,7 @@ export class SimulationInfo extends React.Component<{}, SimulationInfoState> {
 	}
 
 	private handleMaxIterChange(value: string): any {
-		Model.Instance.DEBUG_HARD_ITERATION_LIMIT = Number(value);
+		Model.Instance.CONSTANTS.ITERATION_LIMIT = Number(value);
 		this.setState({ maxIterations: value });
 	}
 

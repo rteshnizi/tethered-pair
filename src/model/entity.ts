@@ -2,6 +2,7 @@ import { fabric } from 'fabric';
 import Renderer from '../viewer/renderer-service';
 import { DisableFabricJsMouseEvents } from '../utils/fabric';
 import Model from './model-service';
+import { PrintDebug, DEBUG_LEVEL } from '../utils/debug';
 
 const SELECT_COLOR = '#FF1493';
 const SELECT_WIDTH = 3;
@@ -29,7 +30,7 @@ export abstract class Entity {
 	}
 
 	public reset(): void {
-		console.log("RESET NOT OVERRIDEN");
+		PrintDebug("RESET NOT OVERRIDEN", DEBUG_LEVEL.L1);
 	}
 
 	public isSelected(): boolean {

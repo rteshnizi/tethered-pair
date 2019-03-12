@@ -1,25 +1,23 @@
 import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
-import { GapTreeNode } from "../ds/gap-tree";
+import { GapTreeNode, GtnAStarComparator } from "../ds/gap-tree";
 import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
-import Renderer from "../viewer/renderer-service";
 import { Path } from "../model/path";
-
-const PRINT_DEBUG = false;
+import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 
 export function Plan(): void {
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
-	VisitLayer(root);
-	console.log(`################################################### ${Model.Instance.ITERATION}`);
-	console.log(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString());
-	console.log(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString());
+	DFSVisitLayer(root);
+	PrintDebug(`################################################### ${Model.Instance.ITERATION}`, DEBUG_LEVEL.L3);
+	PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), DEBUG_LEVEL.L3);
+	PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), DEBUG_LEVEL.L3);
 	Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
 	Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
 }
 
-function VisitLayer(node: GapTreeNode): void {
-	if (Model.Instance.ITERATION === Model.Instance.DEBUG_HARD_ITERATION_LIMIT) return;
+function DFSVisitLayer(node: GapTreeNode): void {
+	if (Model.Instance.ITERATION === Model.Instance.CONSTANTS.ITERATION_LIMIT) return;
 	Model.Instance.ITERATION++;
 	const originalLocation = node.val.robot.location;
 	node.val.robot.location = node.val.gap.location;
@@ -32,7 +30,7 @@ function VisitLayer(node: GapTreeNode): void {
 	const children = node.createChildrenPq();
 	while (!children.isEmpty()) {
 		const n = children.pop();
-		VisitLayer(n);
+		DFSVisitLayer(n);
 	}
 	node.val.robot.location = originalLocation;
 	node.val.gap.setVisitState(node.val.robot, VertexVisitState.UNVISITED);
@@ -41,20 +39,22 @@ function VisitLayer(node: GapTreeNode): void {
 function Visit(node: GapTreeNode): void {
 	// Search termination condition
 	if (IsAtDestination(node)) {
-		console.log("----------------------");
-		console.log(`S -> ${node.parent!.pathString()}`);
-		console.log(`S -> ${node.pathString()}`);
+		PrintDebug("----------------------", DEBUG_LEVEL.L2);
+		PrintDebug(`S -> ${node.parent!.pathString()}`, DEBUG_LEVEL.L2);
+		PrintDebug(`S -> ${node.pathString()}`, DEBUG_LEVEL.L2);
 		// @ts-ignore if they are both at destination then parent is not undefined
 		Model.Instance.addSolutions(node, node.parent);
 		return;
 	}
-	if (PRINT_DEBUG) {
-		console.log("----------------------");
-		console.log(node.parent!.pathString());
-		console.log(node.pathString());
+	PrintDebug("----------------------");
+	PrintDebug(node.parent!.pathString());
+	PrintDebug(node.pathString());
+	// Don't expand if reached max depth
+	if (node.depth === Model.Instance.CONSTANTS.DEPTH_LIMIT) {
+		return;
 	}
 	const gapPairs = GetGapPairs();
-	// console.log(gapPairs);
+	PrintDebug(gapPairs);
 	MakeGapTreeNodes(gapPairs, node);
 }
 

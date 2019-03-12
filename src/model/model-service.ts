@@ -8,14 +8,22 @@ import { Geometry, Fabric2Pts } from "../utils/geometry";
 import { GapTreeNode } from "../ds/gap-tree";
 import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
 import { Path } from "./path";
+import { GTNPriorityQueue } from "../ds/priority-queue";
+import { DEBUG_LEVEL, PrintDebug } from "../utils/debug";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
 type Paths = { [robotName: string]: Path };
 type SolutionPair = { [robotName: string]: GapTreeNode };
+type GapsPQPair = { [robotName: string]: GTNPriorityQueue };
 
 export default class Model {
-	public DEBUG_HARD_ITERATION_LIMIT = 5000;
+	// @ts-ignore Assigned in reset()
+	public gapsPQPair: GapsPQPair;
+	public CONSTANTS = {
+		ITERATION_LIMIT: 1000,
+		DEPTH_LIMIT: 6,
+	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
 	public simulationInfo: SimulationInfo;
@@ -37,7 +45,8 @@ export default class Model {
 		const max = node1.cost > node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
 		if (!currentMax || max.cost < currentMax.cost) {
-			console.log("Minimized Max Solution");
+			PrintDebug("Minimized Max Solution", DEBUG_LEVEL.L3);
+
 			[node1, node2].forEach((node) => {
 				this.Solutions[node.val.robot.name] = node;
 			});
@@ -193,6 +202,7 @@ export default class Model {
 		});
 		this.SolutionPaths = {};
 		this.Solutions = {};
+		this.gapsPQPair = {};
 		this.ITERATION = 0;
 	}
 }
