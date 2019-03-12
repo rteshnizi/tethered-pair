@@ -5,11 +5,36 @@ import { Vertex, VertexVisitState } from "./vertex";
 import { Destination } from "./destination";
 import { forEach } from "lodash";
 import { Geometry, Fabric2Pts } from "../utils/geometry";
+import { GapTreeNode } from "../ds/gap-tree";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
+type SolutionPair = { [robotName: string]: GapTreeNode };
 
 export default class Model {
+	/** Use addSolutions() to update solutions */
+	public Solutions: SolutionPair;
+	public getMaxSolution(): GapTreeNode | undefined {
+		let max: GapTreeNode;
+		forEach(this.Solutions, (node) => {
+			if (!max || node.cost > max.cost) {
+				max = node;
+			}
+		});
+		// @ts-ignore the forEach assigns it
+		return max;
+	}
+	public addSolutions(node1: GapTreeNode, node2: GapTreeNode): void {
+		const max = node1.cost > node2.cost ? node1 : node2;
+		const currentMax = this.getMaxSolution();
+		if (!currentMax || max.cost < currentMax.cost) {
+			console.log("Minimized Max Solution");
+			[node1, node2].forEach((node) => {
+				this.Solutions[node.val.robot.name] = node;
+			});
+		}
+	}
+
 	private static _instance: Model;
 	public static get Instance() {
 		return Model._instance || (Model._instance = new Model());
@@ -84,6 +109,7 @@ export default class Model {
 		this.cable = [];
 		this.vertices = null;
 		this.AllEntities = new Map();
+		this.Solutions = {};
 	}
 
 	/** This method is used when building initial config when user changes size and location of robots */
@@ -117,5 +143,6 @@ export default class Model {
 				v.setVisitState(r, VertexVisitState.UNVISITED);
 			});
 		});
+		this.Solutions = {};
 	}
 }
