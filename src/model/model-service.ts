@@ -105,6 +105,7 @@ export default class Model {
 	/**
 	 * This method returns the vertices of the obstacles that are inside or partially inside the bounding box
 	 * made by the two robot and their respective destination.
+	 * FIXME: This is not working correctly, I think it returns all vertices regardless
 	 */
 	public getVerticesInBoundingBox(): Vertex[] {
 		const boundingBoxPoints = [

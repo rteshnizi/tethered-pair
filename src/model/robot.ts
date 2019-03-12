@@ -47,7 +47,7 @@ export class Robot extends Vertex {
 	public findGaps(): void {
 		this.clearGaps();
 		this.gaps = [];
-		const checkGap = (vert: Vertex) => {
+		const checkGap = (vert: Vertex, _ind: number, _arr: Vertex[]) => {
 			if (vert.getVisitState(this) !== VertexVisitState.UNVISITED) return; // Don't fall into a cycle
 			if (!vert.isVisible(this)) return;
 			// If it doesn't have owner, then it's a destination in which case we don't need to check for being a gap
@@ -62,9 +62,9 @@ export class Robot extends Vertex {
 			return;
 		}
 		if (this.Destination) {
-			checkGap(this.Destination);
+			checkGap(this.Destination, 0, []);
 		}
-		Model.Instance.getVerticesInBoundingBox().forEach((vert) => { checkGap(vert); });
+		Model.Instance.getVerticesInBoundingBox().forEach(checkGap);
 	}
 
 	public addVertToVisited(v: Vertex): void {
