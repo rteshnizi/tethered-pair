@@ -8,10 +8,12 @@ export class SimulationInfoState {
 	public expandedNodes: number;
 	public totalNodes: number;
 	public iteration: number;
+	public maxIterations: string;
 	constructor() {
 		this.expandedNodes = 0;
 		this.totalNodes = 0;
 		this.iteration = 0;
+		this.maxIterations = `${Model.Instance.DEBUG_HARD_ITERATION_LIMIT}`;
 	}
 }
 
@@ -35,11 +37,28 @@ export class SimulationInfo extends React.Component<{}, SimulationInfoState> {
 		return elems;
 	}
 
+	private handleMaxIterChange(value: string): any {
+		Model.Instance.DEBUG_HARD_ITERATION_LIMIT = Number(value);
+		this.setState({ maxIterations: value });
+	}
+
 	render() {
 		return (
 			<div>
 				{/* <Mui.LinearProgress variant="buffer" value={this.state.expandedNodes} valueBuffer={this.state.totalNodes} /> */}
 				{/* <Mui.LinearProgress variant="determinate" value={this.state.expandedNodes} /> */}
+				<div>
+					<Mui.Tooltip title="Max Iterations" placement="top">
+						<Mui.TextField
+							fullWidth={true}
+							label="Max Iteration"
+							value={this.state.maxIterations}
+							margin="dense"
+							inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
+							onChange={(e) => { this.handleMaxIterChange(e.target.value); }}
+							/>
+					</Mui.Tooltip>
+				</div>
 				<Mui.ExpansionPanel>
 					<Mui.ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
 						<h4>Entity Explorer</h4>
