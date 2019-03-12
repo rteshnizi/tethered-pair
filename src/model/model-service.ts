@@ -7,9 +7,11 @@ import { forEach } from "lodash";
 import { Geometry, Fabric2Pts } from "../utils/geometry";
 import { GapTreeNode } from "../ds/gap-tree";
 import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
+import { Path } from "./path";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
+type Paths = { [robotName: string]: Path };
 type SolutionPair = { [robotName: string]: GapTreeNode };
 
 export default class Model {
@@ -30,6 +32,7 @@ export default class Model {
 		// @ts-ignore the forEach assigns it
 		return max;
 	}
+
 	public addSolutions(node1: GapTreeNode, node2: GapTreeNode): void {
 		const max = node1.cost > node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
@@ -84,6 +87,9 @@ export default class Model {
 		});
 		return this.anchors;
 	}
+
+	// @ts-ignore Assigned in reset()
+	public SolutionPaths: Paths;
 
 	private _cableLength: number;
 	public set CableLength(l: number) { this._cableLength = l; }
@@ -182,6 +188,10 @@ export default class Model {
 				v.setVisitState(r, VertexVisitState.UNVISITED);
 			});
 		});
+		forEach(this.SolutionPaths, (path) => {
+			path.remove();
+		});
+		this.SolutionPaths = {};
 		this.Solutions = {};
 		this.ITERATION = 0;
 	}
