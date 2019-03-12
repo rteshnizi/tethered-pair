@@ -8,12 +8,18 @@ import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 export function Plan(): void {
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
+	PrintDebug("################################################### Begin", DEBUG_LEVEL.L3);
+	// window.requestAnimationFrame(DFSVisitLayer.bind(window, root));
 	DFSVisitLayer(root);
-	PrintDebug(`################################################### ${Model.Instance.ITERATION}`, DEBUG_LEVEL.L3);
-	PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), DEBUG_LEVEL.L3);
-	PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), DEBUG_LEVEL.L3);
-	Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
-	Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, DEBUG_LEVEL.L3);
+	if (Model.Instance.foundSolution()) {
+		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), DEBUG_LEVEL.L3);
+		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), DEBUG_LEVEL.L3);
+		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
+		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+	} else {
+		PrintDebug("No Solutions", DEBUG_LEVEL.L3);
+	}
 }
 
 function DFSVisitLayer(node: GapTreeNode): void {
@@ -30,6 +36,7 @@ function DFSVisitLayer(node: GapTreeNode): void {
 	const children = node.createChildrenPq();
 	while (!children.isEmpty()) {
 		const n = children.pop();
+		// window.requestAnimationFrame(DFSVisitLayer.bind(window, n));
 		DFSVisitLayer(n);
 	}
 	node.val.robot.location = originalLocation;
