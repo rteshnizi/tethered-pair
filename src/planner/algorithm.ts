@@ -3,24 +3,20 @@ import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
 
-const DEBUG_HARD_ITERATION_LIMIT = 5000;
-let ITERATION = 0;
-
 const PRINT_DEBUG = false;
 
 export function Plan(): void {
-	ITERATION = 0;
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
 	VisitLayer(root);
-	console.log(`################################################### ${ITERATION}`);
+	console.log(`################################################### ${Model.Instance.ITERATION}`);
 	console.log(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString());
 	console.log(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString());
 }
 
 function VisitLayer(node: GapTreeNode): void {
-	if (ITERATION === DEBUG_HARD_ITERATION_LIMIT) return;
-	ITERATION++;
+	if (Model.Instance.ITERATION === Model.Instance.DEBUG_HARD_ITERATION_LIMIT) return;
+	Model.Instance.ITERATION++;
 	const originalLocation = node.val.robot.location;
 	node.val.robot.location = node.val.gap.location;
 	// Eliminates cycles in the paths

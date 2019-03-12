@@ -6,13 +6,19 @@ import { Destination } from "./destination";
 import { forEach } from "lodash";
 import { Geometry, Fabric2Pts } from "../utils/geometry";
 import { GapTreeNode } from "../ds/gap-tree";
+import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
 type SolutionPair = { [robotName: string]: GapTreeNode };
 
 export default class Model {
+	public DEBUG_HARD_ITERATION_LIMIT = 5000;
+	public ITERATION = 0;
+	// @ts-ignore Assigned in reset()
+	public simulationInfo: SimulationInfo;
 	/** Use addSolutions() to update solutions */
+	// @ts-ignore Assigned in reset()
 	public Solutions: SolutionPair;
 	public getMaxSolution(): GapTreeNode | undefined {
 		let max: GapTreeNode;
@@ -34,6 +40,20 @@ export default class Model {
 			});
 		}
 	}
+
+	/** Use this reference to update the progress. Don't use it elsewhere */
+	// @ts-ignore Initialized in src\ui\simulation-info.tsx
+	private _simulationInfoReactComp: SimulationInfo;
+	// @ts-ignore Initialized in src\ui\simulation-info.tsx
+	private cachedTotalNodes: number;
+	// @ts-ignore Initialized in src\ui\simulation-info.tsx
+	private cachedExpandedNodes: number;
+	public set simulationInfoReactComp(c: SimulationInfo) {
+		this._simulationInfoReactComp = c;
+		this.cachedExpandedNodes = c.state.expandedNodes;
+		this.cachedTotalNodes = c.state.totalNodes;
+	}
+	private PROGRESS_UPDATE_MARGIN = 200;
 
 	private static _instance: Model;
 	public static get Instance() {
@@ -109,7 +129,7 @@ export default class Model {
 		this.cable = [];
 		this.vertices = null;
 		this.AllEntities = new Map();
-		this.Solutions = {};
+		this.reset();
 	}
 
 	/** This method is used when building initial config when user changes size and location of robots */
@@ -135,6 +155,24 @@ export default class Model {
 		}
 	}
 
+	// public simulationInfoIncreaseTotalNodes(): void {
+	// 	this.cachedTotalNodes++;
+	// 	if (this.cachedTotalNodes - this._simulationInfoReactComp.state.totalNodes > this.PROGRESS_UPDATE_MARGIN) {
+	// 		this._simulationInfoReactComp.setState({
+	// 			totalNodes: this.cachedTotalNodes,
+	// 		});
+	// 	}
+	// }
+
+	// public simulationInfoIncreaseExpandedNodes(): void {
+	// 	this.cachedExpandedNodes++;
+	// 	if (this.cachedExpandedNodes - this._simulationInfoReactComp.state.expandedNodes > this.PROGRESS_UPDATE_MARGIN) {
+	// 		this._simulationInfoReactComp.setState({
+	// 			totalNodes: this.cachedExpandedNodes,
+	// 		});
+	// 	}
+	// }
+
 	public reset(): void {
 		forEach(this.Robots, (r) => {
 			r.reset();
@@ -144,5 +182,6 @@ export default class Model {
 			});
 		});
 		this.Solutions = {};
+		this.ITERATION = 0;
 	}
 }

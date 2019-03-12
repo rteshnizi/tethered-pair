@@ -48,7 +48,7 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	simulate(): void {
-		Plan();
+		window.setTimeout(Plan, 10);
 	}
 
 	getStepper(): JSX.Element {
