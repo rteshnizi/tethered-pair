@@ -179,17 +179,14 @@ export default class Model {
 
 	/** This method is used when building initial config when user changes size and location of obstacles */
 	public setObstacle(o: Obstacle, ind: number): void {
-		if (this.obstacles[ind]) {
-			this.obstacles[ind].vertices.forEach((v) => { v.remove(); })
-			this.obstacles[ind].remove();
-		}
+		this.removeObstacle(ind);
 		this.obstacles[ind] = o;
 	}
 
 	public removeObstacle(ind: number): void {
 		if (this.obstacles[ind]) {
+			this.obstacles[ind].vertices.forEach((v) => { v.remove(); })
 			this.obstacles[ind].remove();
-			delete this.obstacles[ind];
 		}
 	}
 
