@@ -1,9 +1,17 @@
 import { LabeledGap } from "../planner/gap-pairs";
 import Model from "../model/model-service";
+import { GTNPriorityQueue } from "./priority-queue";
 
 export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
-	public get children(): GapTreeNode[] { return Array.from(this._children.values()); }
+	/** The user has to cache this */
+	public createChildrenPq(): GTNPriorityQueue {
+		const pQ = new GTNPriorityQueue(GtnCostComparator);
+		this._children.forEach((n) => {
+			pQ.push(n);
+		});
+		return pQ;
+	}
 
 	private _parent?: GapTreeNode;
 	public get parent(): GapTreeNode | undefined { return this._parent; }
@@ -95,4 +103,14 @@ export class GapTreeNode {
 	public toString(): string {
 		return this.val.toString();
 	}
+}
+
+/** Lowest Cost First */
+function GtnCostComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+	return n1.cost < n2.cost;
+}
+
+/** Lowest Cost+H First */
+function GtnAStarComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+	return n1.cost + n1.heuristic() < n2.cost + n2.heuristic();
 }

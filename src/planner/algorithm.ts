@@ -3,14 +3,22 @@ import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
 
+const DEBUG_HARD_ITERATION_LIMIT = 1000;
+let ITERATION = 0;
+
 export function Plan(): void {
+	ITERATION = 0;
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
 	VisitLayer(root);
-	console.log(root);
+	console.log(`################################################### ${ITERATION}`);
+	console.log(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString());
+	console.log(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString());
 }
 
 function VisitLayer(node: GapTreeNode): void {
+	if (ITERATION === DEBUG_HARD_ITERATION_LIMIT) return;
+	ITERATION++;
 	const originalLocation = node.val.robot.location;
 	node.val.robot.location = node.val.gap.location;
 	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITING);
@@ -18,7 +26,9 @@ function VisitLayer(node: GapTreeNode): void {
 	if (node.val.robot.name === Model.Instance.Robots[1].name) {
 		Visit(node);
 	}
-	for (let n of node.children) {
+	const children = node.createChildrenPq();
+	while (!children.isEmpty()) {
+		const n = children.pop();
 		VisitLayer(n);
 	}
 	node.val.robot.location = originalLocation;
@@ -27,18 +37,17 @@ function VisitLayer(node: GapTreeNode): void {
 }
 
 function Visit(node: GapTreeNode): void {
-	console.log(node.parent!.pathString());
-	console.log(node.pathString());
 	console.log("----------------------");
 	// Search termination condition
 	if (IsAtDestination(node)) {
-		console.log("*******Solution*******");
-		// console.log(node.parent!.pathString());
-		// console.log(node.pathString());
+		console.log(`S -> ${node.parent!.pathString()}`);
+		console.log(`S -> ${node.pathString()}`);
 		// @ts-ignore if they are both at destination then parent is not undefined
 		Model.Instance.addSolutions(node, node.parent);
 		return;
 	}
+	console.log(node.parent!.pathString());
+	console.log(node.pathString());
 	const gapPairs = GetGapPairs();
 	// console.log(gapPairs);
 	MakeGapTreeNodes(gapPairs, node);
