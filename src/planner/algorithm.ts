@@ -2,6 +2,7 @@ import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
 import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
+import Renderer from "../viewer/renderer-service";
 
 const PRINT_DEBUG = false;
 
@@ -12,6 +13,8 @@ export function Plan(): void {
 	console.log(`################################################### ${Model.Instance.ITERATION}`);
 	console.log(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString());
 	console.log(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString());
+	// Force a render after algorithm is finished
+	Renderer.Instance.render(true);
 }
 
 function VisitLayer(node: GapTreeNode): void {
