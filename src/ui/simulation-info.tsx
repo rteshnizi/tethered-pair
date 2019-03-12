@@ -9,11 +9,13 @@ export class SimulationInfoState {
 	public totalNodes: number;
 	public iteration: number;
 	public maxIterations: string;
+	public maxDepth: string;
 	constructor() {
 		this.expandedNodes = 0;
 		this.totalNodes = 0;
 		this.iteration = 0;
 		this.maxIterations = `${Model.Instance.CONSTANTS.ITERATION_LIMIT}`;
+		this.maxDepth = `${Model.Instance.CONSTANTS.DEPTH_LIMIT}`;
 	}
 }
 
@@ -42,6 +44,11 @@ export class SimulationInfo extends React.Component<{}, SimulationInfoState> {
 		this.setState({ maxIterations: value });
 	}
 
+	private handleMaxDepthChange(value: string): any {
+		Model.Instance.CONSTANTS.DEPTH_LIMIT = Number(value);
+		this.setState({ maxDepth: value });
+	}
+
 	render() {
 		return (
 			<div>
@@ -56,6 +63,18 @@ export class SimulationInfo extends React.Component<{}, SimulationInfoState> {
 							margin="dense"
 							inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
 							onChange={(e) => { this.handleMaxIterChange(e.target.value); }}
+							/>
+					</Mui.Tooltip>
+				</div>
+				<div>
+					<Mui.Tooltip title="Max Depth" placement="top">
+						<Mui.TextField
+							fullWidth={true}
+							label="Max Depth"
+							value={this.state.maxDepth}
+							margin="dense"
+							inputProps={{style: {fontFamily: "Consolas, 'Courier New', monospace"}}}
+							onChange={(e) => { this.handleMaxDepthChange(e.target.value); }}
 							/>
 					</Mui.Tooltip>
 				</div>
