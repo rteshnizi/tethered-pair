@@ -26,7 +26,9 @@ export class GapTreeNode {
 	}
 
 	public addChild(node: GapTreeNode): boolean {
-		// Before Adding this child just check the global node map
+		// Tested with current solution, didn't work well
+		// const currentSolution = Model.Instance.Solutions[node.val.robot.name];
+		// if (this.parent && currentSolution && currentSolution.cost < this.parent.cost + this.parent.val.gap.location.distanceFrom(node.val.gap.location)) {
 		// If the node exists with a higher cost just update the parent and cost.
 		const maxSolution = Model.Instance.getMaxSolution();
 		// Not Interested in path longer than current solution
