@@ -14,7 +14,6 @@ function VisitLayer(node: GapTreeNode): void {
 	const originalLocation = node.val.robot.location;
 	node.val.robot.location = node.val.gap.location;
 	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITING);
-	// node.val.robot.addVertToVisited(node.val.gap);
 	// Only search for gaps when we have decided for both robots
 	if (node.val.robot.name === Model.Instance.Robots[1].name) {
 		Visit(node);
@@ -23,22 +22,26 @@ function VisitLayer(node: GapTreeNode): void {
 		VisitLayer(n);
 	}
 	node.val.robot.location = originalLocation;
-	// FIXME: This does not have infinite loop but it eliminates solution
-	// Tentative solution is to make a dictionary of all seen gaps and their associated GTN
-	// Then if we see it again and this time the cost is lower, we update the parent to the current node
-	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITED);
-	// node.val.gap.setVisitState(node.val.robot, VertexVisitState.UNVISITED);
-	// node.val.robot.removeVertFromVisited(node.val.gap);
+	// Eliminates cycles in the paths
+	node.val.gap.setVisitState(node.val.robot, VertexVisitState.UNVISITED);
 }
 
 function Visit(node: GapTreeNode): void {
+	console.log(node.parent!.pathString());
+	console.log(node.pathString());
+	console.log("----------------------");
 	// Search termination condition
-	if (IsAtDestination(node)) return;
+	if (IsAtDestination(node)) {
+		console.log("*******Solution*******");
+		// console.log(node.parent!.pathString());
+		// console.log(node.pathString());
+		// @ts-ignore if they are both at destination then parent is not undefined
+		Model.Instance.addSolutions(node, node.parent);
+		return;
+	}
 	const gapPairs = GetGapPairs();
 	// console.log(gapPairs);
-
 	MakeGapTreeNodes(gapPairs, node);
-	// console.log(node);
 }
 
 function CreateGapTreeRoot(): GapTreeNode {

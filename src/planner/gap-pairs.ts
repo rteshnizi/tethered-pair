@@ -1,6 +1,6 @@
 import Model from "../model/model-service";
 import { Geometry } from "../utils/geometry";
-import { Vertex, VertexVisitState } from "../model/vertex";
+import { Vertex } from "../model/vertex";
 import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
 
@@ -146,7 +146,7 @@ export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void 
 		let gtn = parent.isChild(gapPair.first);
 		if (!gtn) {
 			gtn = new GapTreeNode(gapPair.first);
-			parent.addChild(gtn);
+			if (!parent.addChild(gtn)) return;
 		}
 		gtn.addChild(new GapTreeNode(gapPair.second));
 	});
