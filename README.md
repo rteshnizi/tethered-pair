@@ -1,7 +1,7 @@
 # tethered-pair [![Build Status](https://travis-ci.com/rteshnizi/tethered-pair.svg?branch=master)](https://travis-ci.com/rteshnizi/tethered-pair)
 Development code for Tethered Pair Algorithm
 
-## Live Version
+## Live Demo
 See it live [here](https://rteshnizi.bitbucket.io/)
 
 ## Notes
