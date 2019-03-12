@@ -100,6 +100,9 @@ export class GapTreeNode {
 		return this.val.gap.location.distanceFrom(this.val.robot.Destination!.location);
 	}
 
+	public toLongString(): string {
+		return `[${this.val.toString()}-C${this.cost.toFixed(1)}-H${this.heuristic().toFixed(1)}]`;
+	}
 	public toString(): string {
 		return this.val.toString();
 	}
