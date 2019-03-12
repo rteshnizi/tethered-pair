@@ -14,4 +14,6 @@ See it live [here](https://rteshnizi.bitbucket.io/)
 2. ~~Not all Entities need rendering (Fix Entity to accept a bool for rendering)~~
 3. ~~Model.reset()~~
 4. Change Plan to do BFS instead of DFS
-5. fabric.Point @types is wrong for eq, lt, gt, etc. (create a PR)
+5. Even better, use A*
+6. Use a Web Worker to not block the UI
+7. fabric.Point @types is wrong for eq, lt, gt, etc. (create a PR)
