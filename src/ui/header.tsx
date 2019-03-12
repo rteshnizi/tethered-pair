@@ -10,7 +10,7 @@ export class Header extends React.Component {
 	render() {
 		return (
 		<header className="header">
-			<p> Tethered Pair App </p>
+			<p> Tethered Pair Simulator </p>
 		</header>
 		);
 	}
