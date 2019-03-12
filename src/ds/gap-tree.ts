@@ -16,6 +16,9 @@ export class GapTreeNode {
 	private _parent?: GapTreeNode;
 	public get parent(): GapTreeNode | undefined { return this._parent; }
 
+	private _depth: number;
+	public get depth(): number { return this._depth; }
+
 	private _cost: number;
 	/** You can't set the cost directly, you need to add the node to its parent and it will automatically update the cost */
 	public get cost(): number { return this._cost; }
@@ -23,6 +26,7 @@ export class GapTreeNode {
 	constructor(public val: LabeledGap) {
 		this._children = new Map();
 		this._cost = 0;
+		this._depth = 0;
 	}
 
 	public addChild(node: GapTreeNode): boolean {
@@ -37,6 +41,7 @@ export class GapTreeNode {
 		}
 		this._children.set(node.toString(), node);
 		node._parent = this;
+		if (this.parent) node._depth = this.parent.depth + 1;
 		node.updateCost();
 		return true;
 		// // Before Adding this child just check the global node map
@@ -111,11 +116,11 @@ export class GapTreeNode {
 }
 
 /** Lowest Cost First */
-function GtnCostComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+export function GtnCostComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
 	return n1.cost < n2.cost;
 }
 
 /** Lowest Cost+H First */
-function GtnAStarComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+export function GtnAStarComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
 	return n1.cost + n1.heuristic() < n2.cost + n2.heuristic();
 }
