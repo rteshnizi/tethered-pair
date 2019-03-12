@@ -6,7 +6,7 @@ export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
 	/** The user has to cache this */
 	public createChildrenPq(): GTNPriorityQueue {
-		const pQ = new GTNPriorityQueue(GtnCostComparator);
+		const pQ = new GTNPriorityQueue(GtnAStarComparator);
 		this._children.forEach((n) => {
 			pQ.push(n);
 		});
