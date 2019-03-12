@@ -28,6 +28,10 @@ code {
 	text-align: center;
 }
 
+.subheader {
+	font-size: calc(10px + 1vmin);
+}
+
 .viewer-container {
 	border-style: solid;
 	border-width: 1px;

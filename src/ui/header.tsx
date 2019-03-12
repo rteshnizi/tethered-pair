@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { BindMemberMethods } from '../utils/react';
+import pkg from '../../package.json';
 
 export class Header extends React.Component {
 	constructor(props: {}) {
@@ -9,9 +10,18 @@ export class Header extends React.Component {
 
 	render() {
 		return (
-		<header className="header">
-			<p> Tethered Pair Simulator </p>
-		</header>
+			<div>
+				<header className="header">
+					<p> Tethered Pair Simulator </p>
+					<div className="subheader">
+						<sub>
+							v {pkg.version}
+							<br/>
+							By Reza Teshnizi
+						</sub>
+					</div>
+				</header>
+			</div>
 		);
 	}
 }
