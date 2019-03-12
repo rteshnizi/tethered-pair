@@ -88,7 +88,7 @@ export abstract class EntityWithLocation extends Entity {
 			left: currentLeft + deltaLeft,
 		});
 		this._location = l;
-		Renderer.Instance.render(true);
+		// Renderer.Instance.render(true);
 	}
 	public get location(): fabric.Point { return this._location; }
 
