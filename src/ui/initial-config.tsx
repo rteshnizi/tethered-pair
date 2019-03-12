@@ -185,7 +185,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 				<p>
 					{`Obstacle ${obsInd + 1}`}
 					<Mui.Tooltip title="Remove Obstacle" placement="top">
-						<Mui.IconButton aria-label="Toggle password visibility" onClick={() => { this.removeObstacle(obsInd) }}>
+						<Mui.IconButton aria-label="Remove Obstacle" onClick={() => { this.removeObstacle(obsInd) }}>
 							<RemoveIcon fontSize="small" />
 						</Mui.IconButton>
 					</Mui.Tooltip>
@@ -202,7 +202,7 @@ export class InitialConfig extends React.Component<{}, InputState> {
 								endAdornment: (
 								<Mui.InputAdornment position="end">
 									<Mui.Tooltip title="Remove Vertex" placement="bottom">
-										<Mui.IconButton aria-label="Toggle password visibility" onClick={() => { this.removePointFromObstacle(obsInd, vertInd) }}>
+										<Mui.IconButton aria-label="Remove Obstacle" onClick={() => { this.removePointFromObstacle(obsInd, vertInd) }}>
 											<RemoveIcon fontSize="small" />
 										</Mui.IconButton>
 									</Mui.Tooltip>
