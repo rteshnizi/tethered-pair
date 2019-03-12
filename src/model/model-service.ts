@@ -21,8 +21,8 @@ export default class Model {
 	// @ts-ignore Assigned in reset()
 	public gapsPQPair: GapsPQPair;
 	public CONSTANTS = {
-		ITERATION_LIMIT: 1000,
-		DEPTH_LIMIT: 6,
+		ITERATION_LIMIT: 20000,
+		DEPTH_LIMIT: 4,
 	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
@@ -30,6 +30,7 @@ export default class Model {
 	/** Use addSolutions() to update solutions */
 	// @ts-ignore Assigned in reset()
 	public Solutions: SolutionPair;
+	/** TODO: Cache the max when updating solution so you don't have to find it every time */
 	public getMaxSolution(): GapTreeNode | undefined {
 		let max: GapTreeNode;
 		forEach(this.Solutions, (node) => {
@@ -40,16 +41,36 @@ export default class Model {
 		// @ts-ignore the forEach assigns it
 		return max;
 	}
+	/** TODO: Cache the min when updating solution so you don't have to find it every time */
+	public getMinSolution(): GapTreeNode | undefined {
+		let min: GapTreeNode;
+		forEach(this.Solutions, (node) => {
+			if (!min || node.cost <= min.cost) {
+				min = node;
+			}
+		});
+		// @ts-ignore the forEach assigns it
+		return min;
+	}
 
 	public addSolutions(node1: GapTreeNode, node2: GapTreeNode): void {
-		const max = node1.cost > node2.cost ? node1 : node2;
+		const update = (n1: GapTreeNode, n2: GapTreeNode) => {
+			[n1, n2].forEach((node) => {
+				this.Solutions[node.val.robot.name] = node;
+			});
+		}
+		const max = node1.cost >  node2.cost ? node1 : node2;
+		const min = node1.cost <= node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
 		if (!currentMax || max.cost < currentMax.cost) {
 			PrintDebug("Minimized Max Solution", DEBUG_LEVEL.L3);
-
-			[node1, node2].forEach((node) => {
-				this.Solutions[node.val.robot.name] = node;
-			});
+			update(node1, node2);
+		} else if (currentMax && max.cost === currentMax.cost) {
+			const currentMin = this.getMinSolution();
+			if (!currentMin || min.cost < currentMin.cost) {
+				PrintDebug("Max is the same.. Minimized Min Solution", DEBUG_LEVEL.L3);
+				update(node1, node2);
+			}
 		}
 	}
 
@@ -188,6 +209,10 @@ export default class Model {
 	// 		});
 	// 	}
 	// }
+
+	public foundSolution(): boolean {
+		return !!this.Solutions[this.Robots[0].name] && !!this.Solutions[this.Robots[1].name];
+	}
 
 	public reset(): void {
 		forEach(this.Robots, (r) => {
