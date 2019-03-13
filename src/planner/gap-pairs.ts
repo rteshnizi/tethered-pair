@@ -73,6 +73,7 @@ export function GetGapPairs(): Map<string, GapPair> {
 }
 
 // FIXME: Buggy --> This method is incorrect, for the time being we use a O(n^2) solution
+/*
 export function _GetGapPairs(): Map<string, GapPair> {
 	const pairs: Map<string, GapPair> = new Map();
 	const processGapString = (gapString: LabeledGap[]) => {
@@ -125,6 +126,7 @@ function MakeGapString(main: Robot, other: Robot): LabeledGap[] {
 	other.gaps.filter((g) => main.isVisible(g)).forEach((g) => { addGap(g, other); })
 	return all;
 }
+*/
 
 /** This mimics `GapPair.toString()` */
 function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
