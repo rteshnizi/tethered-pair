@@ -13,7 +13,6 @@ export interface GapString {
 	robotNames: string[];
 }
 
-/** I am */
 export class GapPair {
 	public first: LabeledGap;
 	public second: LabeledGap;
@@ -59,6 +58,7 @@ export function GetGapPairs(): Map<string, GapPair> {
 	r1.findGaps();
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
+			if (!g1.isVisible(g2)) continue;
 			const verts = [r0.location, g1.location, g2.location, r1.location];
 			if (!Geometry.IsPolygonEmpty(verts)) continue;
 			const l1 = new LabeledGap(g1, r0);

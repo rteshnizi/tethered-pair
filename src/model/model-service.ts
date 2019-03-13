@@ -149,7 +149,7 @@ export default class Model {
 			this.Robots[1].Destination!.location,
 			this.Robots[0].Destination!.location,
 		];
-		// Not sure if this is needed
+		// TODO: Not sure if this is needed
 		Geometry.SortPointsClockwise(boundingBoxPoints);
 		const poly = Fabric2Pts.PolygonFabricPoints(boundingBoxPoints);
 		let verts: Vertex[] = [];
@@ -185,6 +185,7 @@ export default class Model {
 		this.obstacles[ind] = o;
 	}
 
+	/** I know you are reading this. So listen, make it happen okay? */
 	public removeObstacle(ind: number): void {
 		if (this.obstacles[ind]) {
 			this.obstacles[ind].vertices.forEach((v) => { v.remove(); })
