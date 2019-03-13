@@ -21,8 +21,8 @@ export default class Model {
 	// @ts-ignore Assigned in reset()
 	public gapsPQPair: GapsPQPair;
 	public CONSTANTS = {
-		ITERATION_LIMIT: 20000,
-		DEPTH_LIMIT: 4,
+		ITERATION_LIMIT: 5000,
+		DEPTH_LIMIT: 10,
 	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
@@ -141,7 +141,6 @@ export default class Model {
 	/**
 	 * This method returns the vertices of the obstacles that are inside or partially inside the bounding box
 	 * made by the two robot and their respective destination.
-	 * FIXME: This is not working correctly, I think it returns all vertices regardless
 	 */
 	public getVerticesInBoundingBox(): Vertex[] {
 		const boundingBoxPoints = [
@@ -150,11 +149,14 @@ export default class Model {
 			this.Robots[1].Destination!.location,
 			this.Robots[0].Destination!.location,
 		];
+		// Not sure if this is needed
+		Geometry.SortPointsClockwise(boundingBoxPoints);
 		const poly = Fabric2Pts.PolygonFabricPoints(boundingBoxPoints);
 		let verts: Vertex[] = [];
 		forEach(this.Obstacles, (o) => {
-			o.fabricPoints.some((p) => Geometry.IsPointInsidePolygon(p, poly));
-			verts = verts.concat(o.vertices);
+			if (o.fabricPoints.some((p) => Geometry.IsPointInsidePolygon(p, poly))) {
+				verts = verts.concat(o.vertices);
+			}
 		});
 		return verts;
 	}
