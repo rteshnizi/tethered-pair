@@ -64,12 +64,12 @@ export default class Model {
 		const min = node1.cost <= node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
 		if (!currentMax || max.cost < currentMax.cost) {
-			PrintDebug("Minimized Max Solution", DEBUG_LEVEL.L3);
+			PrintDebug(`Minimized Max Solution (#${this.ITERATION})`, DEBUG_LEVEL.L3);
 			update(node1, node2);
 		} else if (currentMax && max.cost === currentMax.cost) {
 			const currentMin = this.getMinSolution();
 			if (!currentMin || min.cost < currentMin.cost) {
-				PrintDebug("Max is the same.. Minimized Min Solution", DEBUG_LEVEL.L3);
+				PrintDebug(`Max is the same.. Minimized Min Solution (#${this.ITERATION})`, DEBUG_LEVEL.L3);
 				update(node1, node2);
 			}
 		}
