@@ -1,5 +1,5 @@
 import Model from "../model/model-service";
-import { Geometry } from "../utils/geometry";
+import { Geometry, IsPolygonEmptyResult } from "../utils/geometry";
 import { Vertex } from "../model/vertex";
 import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
@@ -16,7 +16,7 @@ export interface GapString {
 export class GapPair {
 	public first: LabeledGap;
 	public second: LabeledGap;
-	constructor(g1: LabeledGap, g2: LabeledGap) {
+	constructor(g1: LabeledGap, g2: LabeledGap, public possibleAnchors?: Vertex[]) {
 		if (g1.robot.name < g2.robot.name) {
 			this.first = g1;
 			this.second = g2;
@@ -60,7 +60,7 @@ export function GetGapPairs(): Map<string, GapPair> {
 		for (const g2 of r1.gaps) {
 			if (!g1.isVisible(g2)) continue;
 			const verts = [r0.location, g1.location, g2.location, r1.location];
-			if (!Geometry.IsPolygonEmpty(verts)) continue;
+			if (Geometry.IsPolygonEmpty(verts) === IsPolygonEmptyResult.NotEmpty) continue;
 			const l1 = new LabeledGap(g1, r0);
 			const l2 = new LabeledGap(g2, r1);
 			if (!GapPairExists(pairs, l1, l2)) {

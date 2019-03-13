@@ -12,7 +12,7 @@ import Model from '../model/model-service';
 export type AngledPoint = fabric.Point & { angle?: number };
 
 export class Geometry {
-	/** It's just a very bug number */
+	/** It's just a very big number */
 	private static HUGE_NUMBER_LOL = 1000000000;
 
 	// https://stackoverflow.com/a/45662872/750567
@@ -127,8 +127,9 @@ export class Geometry {
 		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
 	}
 
+
 	/** Uses Model.Instance */
-	public static IsPolygonEmpty(polygonVerts: fabric.Point[]): boolean {
+	public static IsPolygonEmpty(polygonVerts: fabric.Point[]): IsPolygonEmptyResult {
 		const poly = Fabric2Pts.PolygonFabricPoints(polygonVerts);
 		const isAPolygonVertex = (v: fabric.Point) => {
 			// @ts-ignore @types is wrong for these functions
@@ -139,10 +140,16 @@ export class Geometry {
 		for (let i = 0; i < Model.Instance.Vertices.length; i++) {
 			const vert = Model.Instance.Vertices[i].location;
 			if(isAPolygonVertex(vert)) continue;
-			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert))) return false;
+			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert))) return IsPolygonEmptyResult.NotEmpty;
 		}
-		return true;
+		return IsPolygonEmptyResult.Empty;
 	}
+}
+
+export enum IsPolygonEmptyResult {
+	Empty,
+	OnlyPermissibleVerts,
+	NotEmpty,
 }
 
 class SortCriteria {
