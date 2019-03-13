@@ -23,6 +23,7 @@ export default class Model {
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
 		DEPTH_LIMIT: 10,
+		DEBUG_LEVEL: DEBUG_LEVEL.L2,
 	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
