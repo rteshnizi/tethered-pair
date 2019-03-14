@@ -4,21 +4,23 @@ import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
+import Renderer from "../viewer/renderer-service";
 
 export function Plan(): void {
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
-	PrintDebug("################################################### Begin", DEBUG_LEVEL.L3);
+	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
 	// window.requestAnimationFrame(DFSVisitLayer.bind(window, root));
 	DFSVisitLayer(root);
-	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, DEBUG_LEVEL.L3);
+	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, { level: DEBUG_LEVEL.L3 });
 	if (Model.Instance.foundSolution()) {
-		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), DEBUG_LEVEL.L3);
-		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), DEBUG_LEVEL.L3);
+		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), { level: DEBUG_LEVEL.L3 });
+		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), { level: DEBUG_LEVEL.L3 });
 		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
 		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
 	} else {
-		PrintDebug("No Solutions", DEBUG_LEVEL.L3);
+		Renderer.Instance.render(true);
+		PrintDebug("No Solutions", { level: DEBUG_LEVEL.L3 });
 	}
 }
 
@@ -46,9 +48,9 @@ function DFSVisitLayer(node: GapTreeNode): void {
 function Visit(node: GapTreeNode): void {
 	// Search termination condition
 	if (IsAtDestination(node)) {
-		PrintDebug("----------------------", DEBUG_LEVEL.L2);
-		PrintDebug(`S -> ${node.parent!.pathString()}`, DEBUG_LEVEL.L2);
-		PrintDebug(`S -> ${node.pathString()}`, DEBUG_LEVEL.L2);
+		PrintDebug("----------------------", { level: DEBUG_LEVEL.L2 });
+		PrintDebug(`S -> ${node.parent!.pathString()}`, { level: DEBUG_LEVEL.L2 });
+		PrintDebug(`S -> ${node.pathString()}`, { level: DEBUG_LEVEL.L2 });
 		// @ts-ignore if they are both at destination then parent is not undefined
 		Model.Instance.addSolutions(node, node.parent);
 		return;
@@ -61,7 +63,7 @@ function Visit(node: GapTreeNode): void {
 		return;
 	}
 	const gapPairs = GetGapPairs();
-	PrintDebug(gapPairs);
+	PrintDebug(gapPairs, { dontCallToString: true });
 	MakeGapTreeNodes(gapPairs, node);
 }
 
