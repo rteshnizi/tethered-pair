@@ -7,12 +7,20 @@ export enum DEBUG_LEVEL {
 	DISABLE,
 }
 
-export function PrintDebug(msg: string | Object, level?: DEBUG_LEVEL): void {
-	if (!level) level = DEBUG_LEVEL.L1;
-	if (level < Model.Instance.CONSTANTS.DEBUG_LEVEL) return;
-	if (typeof msg === "string") {
+interface PrintOptions {
+	dontCallToString?: boolean;
+	level?: DEBUG_LEVEL;
+}
+
+export function PrintDebug(msg: string | Object, opts?: PrintOptions): void {
+	opts = Object.assign({ level: DEBUG_LEVEL.L1, dontCallToString: false }, opts);
+	if (opts.level !== undefined && opts.level < Model.Instance.CONSTANTS.DEBUG_LEVEL) return;
+	if (opts.dontCallToString) {
 		console.log(msg);
 	} else {
-		console.log(msg.toString());
+		const str = msg.toString();
+		if (str.length > 0) {
+			console.log(str);
+		}
 	}
 }
