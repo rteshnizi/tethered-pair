@@ -1,8 +1,10 @@
 import Model from "../model/model-service";
-import { Geometry, IsPolygonEmptyResult } from "../utils/geometry";
-import { Vertex } from "../model/vertex";
+import { Geometry, IsPolygonEmptyState } from "../utils/geometry";
+import { Vertex, VisibilityResult } from "../model/vertex";
 import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
+import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
+import { CanAnchorFromGapPair as CanAnchorFromVertexPair } from "./anchoring";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
@@ -58,15 +60,34 @@ export function GetGapPairs(): Map<string, GapPair> {
 	r1.findGaps();
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
-			if (!g1.isVisible(g2)) continue;
-			const verts = [r0.location, g1.location, g2.location, r1.location];
-			if (Geometry.IsPolygonEmpty(verts) === IsPolygonEmptyResult.NotEmpty) continue;
 			const l1 = new LabeledGap(g1, r0);
 			const l2 = new LabeledGap(g2, r1);
-			if (!GapPairExists(pairs, l1, l2)) {
-				const pair = new GapPair(l1, l2);
-				pairs.set(pair.toString(), pair);
+			if (GapPairExists(pairs, l1, l2)) continue;
+			const possibleAnchors: Vertex[] = [];
+			const visResult: VisibilityResult[] = [];
+			// TODO: What if the gap is farther than cable length?
+			if (!g1.isVisible(g2, visResult)) {
+				for (const vis of visResult) {
+					vis.edges.forEach((ps) => {
+						// Both gaps as well both robots should be able to see the anchor if they want to anchor around it
+						if (CanAnchorFromVertexPair(g1, g2, ps.v1) && CanAnchorFromVertexPair(r0, r1, ps.v1)) possibleAnchors.push(ps.v1);
+						if (CanAnchorFromVertexPair(g1, g2, ps.v2) && CanAnchorFromVertexPair(r0, r1, ps.v2)) possibleAnchors.push(ps.v2);
+					});
+				}
+				// If the gaps can't see each other AND there are no possible anchors, then they are not compatible
+				if (possibleAnchors.length === 0) continue;
 			}
+			const verts = [r0.location, g1.location, g2.location, r1.location];
+			const innerVerts: Vertex[] = [];
+			const result = Geometry.IsPolygonEmpty(verts, innerVerts);
+			PrintDebug(innerVerts);
+			if (result.state === IsPolygonEmptyState.NotEmpty) continue;
+			innerVerts.forEach((p) => {
+				if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
+			});
+			if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
+			const pair = new GapPair(l1, l2, possibleAnchors);
+			pairs.set(pair.toString(), pair);
 		}
 	}
 	return pairs;

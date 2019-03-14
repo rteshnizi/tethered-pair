@@ -11,7 +11,7 @@ export interface GapOption {
 	obstacle?: Obstacle;
 }
 
-/** For Visualization ONLY */
+/** DO NOT USE. For Visualization ONLY */
 export class Gap extends EntityWithLocation {
 	/** Only used in sorting */
 	public angle: number;

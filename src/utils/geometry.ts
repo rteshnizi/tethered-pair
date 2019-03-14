@@ -3,7 +3,7 @@ import { Group, Line, Polygon, Pt, PtLike } from 'pts';
 import { Edge } from '../model/edge';
 import { Obstacle } from '../model/obstacle';
 import { EntityWithLocation } from '../model/entity';
-import { Vertex } from '../model/vertex';
+import { Vertex, VertexPair } from '../model/vertex';
 import { Robot } from '../model/robot';
 import { GetFabricPointFromVertex } from './fabric';
 import { LabeledGap } from '../planner/gap-pairs';
@@ -127,9 +127,14 @@ export class Geometry {
 		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
 	}
 
+	public static IntersectLines(l1: VertexPair, l2: VertexPair): fabric.Point | undefined {
+		const pt = Line.intersectLine2D(Fabric2Pts.Line(l1), Fabric2Pts.Line(l2));
+		if (!pt) return undefined;
+		return Pts2Fabric.Point(pt);
+	}
 
 	/** Uses Model.Instance */
-	public static IsPolygonEmpty(polygonVerts: fabric.Point[]): IsPolygonEmptyResult {
+	public static IsPolygonEmpty(polygonVerts: fabric.Point[], permissibleVerts: Vertex[]): IsPolygonEmptyResult {
 		const poly = Fabric2Pts.PolygonFabricPoints(polygonVerts);
 		const isAPolygonVertex = (v: fabric.Point) => {
 			// @ts-ignore @types is wrong for these functions
@@ -137,16 +142,34 @@ export class Geometry {
 				return v.eq(p);
 			});
 		}
+		const r = {
+			state: IsPolygonEmptyState.Empty,
+			vertices: [],
+		};
 		for (let i = 0; i < Model.Instance.Vertices.length; i++) {
-			const vert = Model.Instance.Vertices[i].location;
-			if(isAPolygonVertex(vert)) continue;
-			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert))) return IsPolygonEmptyResult.NotEmpty;
+			const vert = Model.Instance.Vertices[i];
+			if(isAPolygonVertex(vert.location)) continue;
+			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert.location))) {
+				if (vert.isGlobalAnchor) {
+					permissibleVerts.push(vert);
+					if(r.state !== IsPolygonEmptyState.NotEmpty) {
+						r.state = IsPolygonEmptyState.OnlyPermissibleVerts;
+					}
+				} else {
+					r.state = IsPolygonEmptyState.NotEmpty;
+				}
+			}
 		}
-		return IsPolygonEmptyResult.Empty;
+		return r;
 	}
 }
 
-export enum IsPolygonEmptyResult {
+interface IsPolygonEmptyResult {
+	state: IsPolygonEmptyState,
+	vertices: Vertex[],
+}
+
+export enum IsPolygonEmptyState {
 	Empty,
 	OnlyPermissibleVerts,
 	NotEmpty,
@@ -196,10 +219,10 @@ export class Fabric2Pts {
 		return [p.x, p.y];
 	}
 
-	public static Line(e: Edge): Group {
+	public static Line(vPair: VertexPair): Group {
 		return Group.fromArray([
-			[e.v1.location.x, e.v1.location.y],
-			[e.v2.location.x, e.v2.location.y],
+			[vPair.v1.location.x, vPair.v1.location.y],
+			[vPair.v2.location.x, vPair.v2.location.y],
 		]);
 	}
 

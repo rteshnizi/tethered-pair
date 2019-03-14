@@ -4,7 +4,6 @@ import { Obstacle } from './obstacle';
 import Model from './model-service';
 import { Edge } from './edge';
 import { Geometry } from '../utils/geometry';
-import { Destination } from './destination';
 import { Robot } from './robot';
 
 const DEFAULT_FILL = 'rgba(0,0,0,0)';
@@ -24,9 +23,16 @@ export interface VertexOption {
 	renderRadius: number;
 }
 
+export class VertexPair {
+	constructor(public v1: Vertex, public v2: Vertex) {}
+}
+
+export interface VisibilityResult {
+	obstacle: Obstacle;
+	edges: VertexPair[];
+}
+
 export class Vertex extends EntityWithLocation {
-	private anchorChecked = false;
-	private _canAnchor: boolean;
 	/** One State per Robot */
 	private _visitState: { [robotName: string]: VertexVisitState };
 	public setVisitState(r: Robot, state: VertexVisitState): void { this._visitState[r.name] = state; }
@@ -40,11 +46,14 @@ export class Vertex extends EntityWithLocation {
 			fill: options.shouldFill ? (options.fillColor ? options.fillColor : options.color) : DEFAULT_FILL,
 			stroke: options.color
 		}), true);
-		this._canAnchor = false;
 		this._visitState = {};
 	}
 
-	isVisible(other: Vertex): boolean {
+	/**
+	 * @param other The target vertex to check visibility for from this vertex
+	 * @param results If provided, you will get additional information back in the array if the return value is false
+	 */
+	public isVisible(other: Vertex, results?: VisibilityResult[]): boolean {
 		let isVis = true;
 		const edge = new Edge(`${this.name}<->${other.name}`, this, other);
 		const numObs = Object.keys(Model.Instance.Obstacles).length;
@@ -55,7 +64,15 @@ export class Vertex extends EntityWithLocation {
 			// o.select();
 			if (Geometry.IntersectEdgeAndObstacle(edge, o)) {
 				isVis = false;
-				break;
+				if (results) {
+					const edges = o.getIntersectingEdges(edge);
+					results.push({
+						obstacle: o,
+						edges
+					});
+				} else {
+					break;
+				}
 			}
 		}
 		edge.remove();
@@ -63,7 +80,7 @@ export class Vertex extends EntityWithLocation {
 		return isVis;
 	}
 
-	isOwnedBy(o: Obstacle): boolean {
+	public isOwnedBy(o: Obstacle): boolean {
 		// fast check
 		if (!!this.options.owner && (o.name === this.options.owner.name)) return true;
 		// detailed check
@@ -71,16 +88,20 @@ export class Vertex extends EntityWithLocation {
 		return o.fabricPoints.some((p) => this.location.eq(p));
 	}
 
-	canAnchor(d1: Destination, d2: Destination, cableLength: number): boolean {
-		if (this.anchorChecked) return this._canAnchor;
-		this.select();
-		this._canAnchor = (this.location.distanceFrom(d1.location) + this.location.distanceFrom(d2.location)) <= cableLength;
-		this.anchorChecked = true;
-		this.deselect();
-		return this._canAnchor;
+	/** A very simple check whether the sum of distances from the two given destinations is less than or cableLength */
+	public canAnchor(dest1: Vertex, dest2: Vertex, cableLength: number): boolean {
+		// this.select();
+		return (this.location.distanceFrom(dest1.location) + this.location.distanceFrom(dest2.location)) <= cableLength;
+		// this.deselect();
 	}
 
-	setAsAnchor(): void {
+	/** Whether we can possibly anchor around this point to get to the destinations */
+	public get isGlobalAnchor(): boolean {
+		return Model.Instance.isAnchor(this);
+	}
+
+	/** This is just a visualization. Does not change Object's properties. */
+	public setAsGlobalAnchor(): void {
 		this.shape.set('fill', ANCHOR_FILL);
 	}
 }
