@@ -30,7 +30,7 @@ export abstract class Entity {
 	}
 
 	public reset(): void {
-		PrintDebug("RESET NOT OVERRIDEN", DEBUG_LEVEL.L1);
+		PrintDebug("RESET NOT OVERRIDEN");
 	}
 
 	public isSelected(): boolean {
