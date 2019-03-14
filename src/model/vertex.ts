@@ -7,7 +7,7 @@ import { Geometry } from '../utils/geometry';
 import { Robot } from './robot';
 
 const DEFAULT_FILL = 'rgba(0,0,0,0)';
-const ANCHOR_FILL = 'LightGreen';
+const ANCHOR_FILL = 'DarkGreen';
 
 export enum VertexVisitState {
 	UNVISITED,
