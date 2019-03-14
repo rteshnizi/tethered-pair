@@ -64,12 +64,12 @@ export default class Model {
 		const min = node1.cost <= node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
 		if (!currentMax || max.cost < currentMax.cost) {
-			PrintDebug(`Minimized Max Solution (#${this.ITERATION})`, DEBUG_LEVEL.L3);
+			PrintDebug(`Minimized Max Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
 			update(node1, node2);
 		} else if (currentMax && max.cost === currentMax.cost) {
 			const currentMin = this.getMinSolution();
 			if (!currentMin || min.cost < currentMin.cost) {
-				PrintDebug(`Max is the same.. Minimized Min Solution (#${this.ITERATION})`, DEBUG_LEVEL.L3);
+				PrintDebug(`Max is the same.. Minimized Min Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
 				update(node1, node2);
 			}
 		}
@@ -102,16 +102,25 @@ export default class Model {
 	private obstacles: Obstacles;
 	public get Obstacles(): Readonly<Obstacles> { return this.obstacles; }
 
+	/** This maps the `vertex.name` to its index in `this.Vertices` */
+	private anchorsMap: Set<string>;
+	public isAnchor(v: Vertex): boolean {
+		// The line below is just to ensure we have populated the set.
+		this.Anchors;
+		return this.anchorsMap.has(v.name);
+	}
+
 	private anchors?: Vertex[];
 	public get Anchors(): Vertex[] {
-		const d1 = this.Robots[0].Destination;
-		const d2 = this.Robots[1].Destination;
-		if (!d1 || !d2) return [];
 		if (this.anchors) return this.anchors;
+		if (this.Robots[0].Destination === null) return [];
+		if (this.Robots[1].Destination === null) return [];
 		this.anchors = [];
-		this.Vertices.forEach((v) => {
-			if (v.canAnchor(d1, d2, this.CableLength)) {
-				v.setAsAnchor();
+		this.Vertices.forEach((v, ind) => {
+			// @ts-ignore there is a null check above that TS is not seeing
+			if (v.canAnchor(this.Robots[0].Destination, this.Robots[1].Destination, this.CableLength)) {
+				this.anchorsMap.add(v.name);
+				v.setAsGlobalAnchor();
 				// @ts-ignore anchors is set above
 				this.anchors.push(v);
 			}
@@ -169,6 +178,7 @@ export default class Model {
 		this.cable = [];
 		this.vertices = null;
 		this.AllEntities = new Map();
+		this.anchorsMap = new Set();
 		this.reset();
 	}
 
