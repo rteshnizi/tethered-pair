@@ -1,12 +1,14 @@
 import { fabric } from 'fabric';
 import { Entity } from './entity';
-import { Vertex } from './vertex';
+import { Vertex, VertexPair } from './vertex';
 
 const STROKE_WIDTH = 2;
 const COLOR = 'DarkGreen';
 
 /** Represents a line segment */
 export class Edge extends Entity {
+	private _vertices: VertexPair;
+	public get vertices(): VertexPair { return this._vertices; }
 	constructor(name: string, public v1: Vertex, public v2: Vertex) {
 		// https://github.com/fabricjs/fabric.js/blob/master/src/shapes/line.class.js#L67
 		// Very confusing
@@ -27,5 +29,6 @@ export class Edge extends Entity {
 			),
 			false
 		);
+		this._vertices = { v1, v2 };
 	}
 }
