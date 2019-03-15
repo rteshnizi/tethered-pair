@@ -6,7 +6,7 @@ import { EntityWithLocation } from '../model/entity';
 import { Vertex, VertexPair } from '../model/vertex';
 import { Robot } from '../model/robot';
 import { GetFabricPointFromVertex } from './fabric';
-import { LabeledGap } from '../planner/gap-pairs';
+import { LabeledGap } from '../planner/labeled-gap';
 import Model from '../model/model-service';
 
 export type AngledPoint = fabric.Point & { angle?: number };

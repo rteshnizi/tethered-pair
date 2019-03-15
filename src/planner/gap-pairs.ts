@@ -1,10 +1,10 @@
 import Model from "../model/model-service";
 import { Geometry, IsPolygonEmptyState } from "../utils/geometry";
 import { Vertex, VisibilityResult } from "../model/vertex";
-import { Robot } from "../model/robot";
 import { GapTreeNode } from "../ds/gap-tree";
-import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
+import { PrintDebug } from "../utils/debug";
 import { CanAnchorFromGapPair as CanAnchorFromVertexPair } from "./anchoring";
+import { LabeledGap } from "./labeled-gap";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
@@ -39,21 +39,6 @@ function GapPairToString(first: LabeledGap, second: LabeledGap, anchor?: Vertex)
 	return `${first.toString()}-${second.toString()}${anchorStr}`;
 }
 
-export class LabeledGap {
-	constructor(public gap: Vertex, public robot: Robot) { }
-
-	public eq(other: LabeledGap): boolean {
-		// we don't need to check the robots because first always belongs to R0 and second to R1
-		if (this.gap.name !== other.gap.name) return false;
-		if (this.gap.name !== other.gap.name) return false;
-		return true;
-	}
-
-	public toString(): string {
-		return `(${this.robot.name},${this.gap.name})`;
-	}
-}
-
 export function GapPairExists(gapPairs: Map<string, GapPair>, g1: LabeledGap, g2: LabeledGap): boolean {
 	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
@@ -66,8 +51,8 @@ export function GetGapPairs(): Map<string, GapPair> {
 
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
-			const l1 = new LabeledGap(g1, r0);
-			const l2 = new LabeledGap(g2, r1);
+			const l1 = new LabeledGap(g1, r0, undefined);
+			const l2 = new LabeledGap(g2, r1, undefined);
 			if (GapPairExists(pairs, l1, l2)) continue;
 			const possibleAnchors: Vertex[] = [];
 			const visResult: VisibilityResult[] = [];

@@ -1,4 +1,4 @@
-import { LabeledGap } from "../planner/gap-pairs";
+import { LabeledGap } from "../planner/labeled-gap";
 import Model from "../model/model-service";
 import { GTNPriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";

@@ -1,11 +1,12 @@
-import { GetGapPairs, LabeledGap, MakeGapTreeNodes } from "./gap-pairs";
-import { GapTreeNode, GtnAStarComparator } from "../ds/gap-tree";
+import { GetGapPairs, MakeGapTreeNodes } from "./gap-pairs";
+import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
 import { VertexVisitState } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 import Renderer from "../viewer/renderer-service";
 import { Cable } from "../model/cable";
+import { LabeledGap } from "./labeled-gap";
 
 export function Plan(): void {
 	Model.Instance.reset();
@@ -71,8 +72,7 @@ function Visit(node: GapTreeNode): void {
 	r0.findGaps();
 	r1.findGaps();
 	if (node.anchor) {
-		const i = 0;
-		// TODO: Do top field stuff
+		// MakeGapTreeNodes(gapPairs, node);
 	} else {
 		const gapPairs = GetGapPairs();
 		PrintDebug(gapPairs, { dontCallToString: true });
@@ -81,8 +81,8 @@ function Visit(node: GapTreeNode): void {
 }
 
 function CreateGapTreeRoot(): GapTreeNode {
-	const root = new GapTreeNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0]), undefined);
-	root.addChild(new GapTreeNode(new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1]), undefined));
+	const root = new GapTreeNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0], undefined), undefined);
+	root.addChild(new GapTreeNode(new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1], undefined), undefined));
 	return root;
 }
 
