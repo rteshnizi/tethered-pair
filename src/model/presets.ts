@@ -36,4 +36,9 @@ const Preset5: Preset = {
 	json: '{"robots":["295, 50","505, 50"],"destinations":["150, 500", "330, 520"], "obstacles":[["175, 100","225, 100","225, 150","175, 150"],["300, 200","425, 200","300, 225","425, 225"],["50, 300","50, 350","250, 300","250, 350"],["325, 400","350, 400","325, 425","350, 425"],["425, 410","400, 435","450, 435"]],"cableLength":400}',
 }
 
-export const AllPresets = [PresetUnset, Preset1, Preset2, Preset3, Preset4, Preset5];
+const Preset6: Preset = {
+	name: "Preset 6",
+	json: '{"robots":["300, 350","390, 350"],"destinations":["300, 500","360, 500"], "obstacles":[["175, 100","225, 100","225, 150","175, 150"],["300, 200","425, 200","300, 225","425, 225"],["50, 300","50, 350","250, 300","250, 350"],["325, 400","350, 400","325, 425","350, 425"],["425, 410","400, 435","450, 435"]],"cableLength":400}',
+}
+
+export const AllPresets = [PresetUnset, Preset1, Preset2, Preset3, Preset4, Preset5, Preset6];

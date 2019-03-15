@@ -148,7 +148,7 @@ export class Geometry {
 		};
 		for (let i = 0; i < Model.Instance.Vertices.length; i++) {
 			const vert = Model.Instance.Vertices[i];
-			if(isAPolygonVertex(vert.location)) continue;
+			if (isAPolygonVertex(vert.location)) continue;
 			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert.location))) {
 				if (vert.isGlobalAnchor) {
 					permissibleVerts.push(vert);

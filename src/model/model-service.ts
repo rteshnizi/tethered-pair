@@ -24,7 +24,7 @@ export default class Model {
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
 		DEPTH_LIMIT: 10,
-		DEBUG_LEVEL: DEBUG_LEVEL.L2,
+		DEBUG_LEVEL: DEBUG_LEVEL.L3,
 	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
@@ -212,6 +212,8 @@ export default class Model {
 		for (const v of this.Vertices) {
 			if (p.eq(v.location)) return v;
 		}
+		if (p.eq(this.Robots[0].location)) return this.Robots[0];
+		if (p.eq(this.Robots[1].location)) return this.Robots[1];
 		return undefined;
 	}
 

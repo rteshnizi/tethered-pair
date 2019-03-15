@@ -128,8 +128,7 @@ export class GapTreeNode {
 		return `[${this.val.toString()}-C${this.cost.toFixed(1)}-H${this.heuristic().toFixed(1)}]`;
 	}
 	public toString(): string {
-		const anchorStr = this.anchor ? `x${this.anchor.toString()}` : "";
-		return `${this.val.toString()}${anchorStr}`;
+		return `${this.val.toString()}`;
 	}
 }
 

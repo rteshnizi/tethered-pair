@@ -1,12 +1,13 @@
-import { GetGapPairs, MakeGapTreeNodes } from "./gap-pairs";
+import * as GapPairFuncs from "./gap-pairs";
 import { GapTreeNode } from "../ds/gap-tree";
 import Model from "../model/model-service";
-import { VertexVisitState } from "../model/vertex";
+import { VertexVisitState, Vertex } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 import Renderer from "../viewer/renderer-service";
 import { Cable } from "../model/cable";
 import { LabeledGap } from "./labeled-gap";
+import * as SingleGapFuncs from "./single-gap";
 
 export function Plan(): void {
 	Model.Instance.reset();
@@ -67,16 +68,19 @@ function Visit(node: GapTreeNode): void {
 	if (node.depth === Model.Instance.CONSTANTS.DEPTH_LIMIT) {
 		return;
 	}
-	const r0 = Model.Instance.Robots[0];
-	const r1 = Model.Instance.Robots[1];
-	r0.findGaps();
-	r1.findGaps();
-	if (node.anchor) {
-		// MakeGapTreeNodes(gapPairs, node);
+	// We should try anchoring if the robots both can see their destination
+	// that's the shortest way
+	// We should also try anchoring, if previous gap chasings have caused an anchor
+	// See Preset 2
+	// THEY MUST HAVE ANCHORS AT THE SAME TIME. THAT'S THE WHOLE POINT
+	if (node.anchor && node.parent && node.parent.anchor) {
+		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(Model.Instance.Robots[0], node.parent.anchor);
+		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(Model.Instance.Robots[1], node.anchor);
+		SingleGapFuncs.MakeGapTreeNodes(r0Gaps, r1Gaps, node);
 	} else {
-		const gapPairs = GetGapPairs();
+		const gapPairs = GapPairFuncs.GetGapPairs();
 		PrintDebug(gapPairs, { dontCallToString: true });
-		MakeGapTreeNodes(gapPairs, node);
+		GapPairFuncs.MakeGapTreeNodes(gapPairs, node);
 	}
 }
 

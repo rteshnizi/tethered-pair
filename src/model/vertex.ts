@@ -88,7 +88,10 @@ export class Vertex extends EntityWithLocation {
 		return o.fabricPoints.some((p) => this.location.eq(p));
 	}
 
-	/** A very simple check whether the sum of distances from the two given destinations is less than or cableLength */
+	/**
+	 * A very simple check whether the sum of distances from the two given destinations is less than or cableLength
+	 * This is just for fast checking. The detailed check happens inside the GapTreeNode where we keep the actual cable length
+	 */
 	public canAnchor(dest1: Vertex, dest2: Vertex, cableLength: number): boolean {
 		// this.select();
 		return (this.location.distanceFrom(dest1.location) + this.location.distanceFrom(dest2.location)) <= cableLength;

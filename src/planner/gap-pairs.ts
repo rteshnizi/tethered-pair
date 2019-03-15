@@ -3,7 +3,7 @@ import { Geometry, IsPolygonEmptyState } from "../utils/geometry";
 import { Vertex, VisibilityResult } from "../model/vertex";
 import { GapTreeNode } from "../ds/gap-tree";
 import { PrintDebug } from "../utils/debug";
-import { CanAnchorFromGapPair as CanAnchorFromVertexPair } from "./anchoring";
+import { CanAnchorFromVertices as CanAnchorFromVertices } from "./anchoring";
 import { LabeledGap } from "./labeled-gap";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
@@ -18,7 +18,7 @@ export interface GapString {
 export class GapPair {
 	public first: LabeledGap;
 	public second: LabeledGap;
-	constructor(g1: LabeledGap, g2: LabeledGap, public anchor?: Vertex) {
+	constructor(g1: LabeledGap, g2: LabeledGap) {
 		if (g1.robot.name < g2.robot.name) {
 			this.first = g1;
 			this.second = g2;
@@ -29,14 +29,13 @@ export class GapPair {
 	}
 
 	public toString(): string {
-		return GapPairToString(this.first, this.second, this.anchor);
+		return GapPairToString(this.first, this.second);
 	}
 }
 
 /** This function is not safe to use as it assumes the correct ordering. Use `MakeGapPairName()` instead. */
-function GapPairToString(first: LabeledGap, second: LabeledGap, anchor?: Vertex): string {
-	const anchorStr = anchor ? `x${anchor.toString()}` : "";
-	return `${first.toString()}-${second.toString()}${anchorStr}`;
+function GapPairToString(first: LabeledGap, second: LabeledGap): string {
+	return `${first.toString()}-${second.toString()}`;
 }
 
 export function GapPairExists(gapPairs: Map<string, GapPair>, g1: LabeledGap, g2: LabeledGap): boolean {
@@ -48,38 +47,55 @@ export function GetGapPairs(): Map<string, GapPair> {
 	const pairs: Map<string, GapPair> = new Map();
 	const r0 = Model.Instance.Robots[0];
 	const r1 = Model.Instance.Robots[1];
+	r0.findGaps(true);
+	r1.findGaps(true);
 
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
-			const l1 = new LabeledGap(g1, r0, undefined);
-			const l2 = new LabeledGap(g2, r1, undefined);
-			if (GapPairExists(pairs, l1, l2)) continue;
+			// FIXME: THIS CASE IS DEFINITELY BUGGY
+			let l1 = new LabeledGap(g1, r0, undefined);
+			let l2 = new LabeledGap(g2, r1, undefined);
+			// if (GapPairExists(pairs, l1, l2)) continue;
+
 			const possibleAnchors: Vertex[] = [];
-			const visResult: VisibilityResult[] = [];
-			// TODO: What if the gap is farther than cable length?
-			if (!g1.isVisible(g2, visResult)) {
-				for (const vis of visResult) {
-					vis.edges.forEach((ps) => {
-						// Both gaps as well both robots should be able to see the anchor if they want to anchor around it
-						if (CanAnchorFromVertexPair(g1, g2, ps.v1) && CanAnchorFromVertexPair(r0, r1, ps.v1)) possibleAnchors.push(ps.v1);
-						if (CanAnchorFromVertexPair(g1, g2, ps.v2) && CanAnchorFromVertexPair(r0, r1, ps.v2)) possibleAnchors.push(ps.v2);
-					});
-				}
-				// If the gaps can't see each other AND there are no possible anchors, then they are not compatible
-				if (possibleAnchors.length === 0) continue;
-			}
+			// const visResult: VisibilityResult[] = [];
+			// // TODO: What if the gap is farther than cable length?
+			// if (!g1.isVisible(g2, visResult)) {
+			// 	for (const vis of visResult) {
+			// 		vis.edges.forEach((ps) => {
+			// 			// Both gaps as well both robots should be able to see the anchor if they want to anchor around it
+			// 			if (CanAnchorFromVertices([g1, g2, r0, r1], ps.v1)) possibleAnchors.push(ps.v1);
+			// 			if (CanAnchorFromVertices([g1, g2, r0, r1], ps.v2)) possibleAnchors.push(ps.v2);
+			// 		});
+			// 	}
+			// 	// If the gaps can't see each other AND there are no possible anchors, then they are not compatible
+			// 	if (possibleAnchors.length === 0) continue;
+			// }
 			const verts = [r0.location, g1.location, g2.location, r1.location];
 			const innerVerts: Vertex[] = [];
 			const result = Geometry.IsPolygonEmpty(verts, innerVerts);
 			PrintDebug(innerVerts);
 			if (result.state === IsPolygonEmptyState.NotEmpty) continue;
 			innerVerts.forEach((p) => {
-				if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
+				// if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
+				if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
+					// Anchor the current gaps to the anchor and next time it will be single gap problem
+					possibleAnchors.push(p);
+					let tmpV: Vertex | undefined;
+					tmpV = Model.Instance.getVertexByLocation(r0.location);
+					if (tmpV) {
+						l1 = new LabeledGap(tmpV, r0, p);
+					}
+					tmpV = Model.Instance.getVertexByLocation(r1.location);
+					if (tmpV) {
+						l2 = new LabeledGap(tmpV, r1, p);
+					}
+				}
 			});
 			if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
 			if (possibleAnchors.length > 0) {
 				possibleAnchors.forEach((a) => {
-					const pair = new GapPair(l1, l2, a);
+					const pair = new GapPair(l1, l2);
 					pairs.set(pair.toString(), pair);
 				});
 			} else {
@@ -172,9 +188,9 @@ export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void 
 
 		let gtn = parent.isChild(gapPair.first);
 		if (!gtn) {
-			gtn = new GapTreeNode(gapPair.first, gapPair.anchor);
+			gtn = new GapTreeNode(gapPair.first, gapPair.first.anchor);
 			if (!parent.addChild(gtn)) return;
 		}
-		gtn.addChild(new GapTreeNode(gapPair.second, gapPair.anchor));
+		gtn.addChild(new GapTreeNode(gapPair.second, gapPair.second.anchor));
 	});
 }

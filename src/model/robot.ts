@@ -44,7 +44,7 @@ export class Robot extends Vertex {
 		this._renderedGaps = [];
 	}
 
-	public findGaps(): void {
+	public findGaps(isStayingAnOption: boolean): void {
 		this.clearGaps();
 		this.gaps = [];
 		const checkGap = (vert: Vertex, _ind: number, _arr: Vertex[]) => {
@@ -61,10 +61,12 @@ export class Robot extends Vertex {
 			this.gaps.push(this.Destination);
 			return;
 		}
-		// To give a chance of unequal steps
-		const currentVert = Model.Instance.getVertexByLocation(this.location);
-		if (currentVert) {
-			this.gaps.push(currentVert);
+		// To give a chance of unequal steps for gap pairs
+		if (isStayingAnOption) {
+			const currentVert = Model.Instance.getVertexByLocation(this.location);
+			if (currentVert) {
+				this.gaps.push(currentVert);
+			}
 		}
 		if (this.Destination) {
 			checkGap(this.Destination, 0, []);
