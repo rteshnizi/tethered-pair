@@ -61,6 +61,11 @@ export class Robot extends Vertex {
 			this.gaps.push(this.Destination);
 			return;
 		}
+		// To give a chance of unequal steps
+		const currentVert = Model.Instance.getVertexByLocation(this.location);
+		if (currentVert) {
+			this.gaps.push(currentVert);
+		}
 		if (this.Destination) {
 			checkGap(this.Destination, 0, []);
 		}

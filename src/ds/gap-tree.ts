@@ -1,6 +1,7 @@
 import { LabeledGap } from "../planner/gap-pairs";
 import Model from "../model/model-service";
 import { GTNPriorityQueue } from "./priority-queue";
+import { Vertex } from "../model/vertex";
 
 export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
@@ -23,13 +24,21 @@ export class GapTreeNode {
 	/** You can't set the cost directly, you need to add the node to its parent and it will automatically update the cost */
 	public get cost(): number { return this._cost; }
 
-	constructor(public val: LabeledGap) {
+	private _consumedCable: number;
+	private get consumedCable(): number { return this._consumedCable; }
+
+	constructor(public val: LabeledGap, public anchor: Vertex | undefined) {
 		this._children = new Map();
 		this._cost = 0;
 		this._depth = 0;
+		this._consumedCable = 0;
 	}
 
 	public addChild(node: GapTreeNode): boolean {
+		const c = this.cableNeededForThisChild(node);
+		if (this.consumedCable + c > Model.Instance.CableLength) {
+			return false;
+		}
 		// Tested with current solution, didn't work well
 		// const currentSolution = Model.Instance.Solutions[node.val.robot.name];
 		// if (this.parent && currentSolution && currentSolution.cost < this.parent.cost + this.parent.val.gap.location.distanceFrom(node.val.gap.location)) {
@@ -41,6 +50,7 @@ export class GapTreeNode {
 		}
 		this._children.set(node.toString(), node);
 		node._parent = this;
+		node._consumedCable = this.consumedCable + c;
 		if (this.parent) node._depth = this.parent.depth + 1;
 		node.updateCost();
 		return true;
@@ -65,6 +75,13 @@ export class GapTreeNode {
 		// 	this._children.set(node.toString(), node);
 		// 	current.updateCost();
 		// }
+	}
+
+	private cableNeededForThisChild(node: GapTreeNode): number {
+		if (!node.anchor) return 0;
+		const cableNeededForThisStep = node.anchor.location.distanceFrom(node.val.gap.location);
+		let cableNeededFromMyAnchorToTheOther = this.anchor ? this.anchor.location.distanceFrom(node.anchor.location) : 0;
+		return cableNeededForThisStep + cableNeededFromMyAnchorToTheOther;
 	}
 
 	public isChild(gap: LabeledGap): GapTreeNode | undefined {
@@ -111,7 +128,8 @@ export class GapTreeNode {
 		return `[${this.val.toString()}-C${this.cost.toFixed(1)}-H${this.heuristic().toFixed(1)}]`;
 	}
 	public toString(): string {
-		return this.val.toString();
+		const anchorStr = this.anchor ? `x${this.anchor.toString()}` : "";
+		return `${this.val.toString()}${anchorStr}`;
 	}
 }
 

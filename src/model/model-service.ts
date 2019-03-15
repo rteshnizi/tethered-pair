@@ -10,6 +10,7 @@ import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
 import { Path } from "./path";
 import { GTNPriorityQueue } from "../ds/priority-queue";
 import { DEBUG_LEVEL, PrintDebug } from "../utils/debug";
+import { Cable } from "./cable";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
@@ -130,6 +131,7 @@ export default class Model {
 
 	// @ts-ignore Assigned in reset()
 	public SolutionPaths: Paths;
+	public CablePath: Cable | undefined;
 
 	private _cableLength: number;
 	public set CableLength(l: number) { this._cableLength = l; }
@@ -137,6 +139,7 @@ export default class Model {
 
 	private cable: Vertex[];
 	private vertices: Vertex[] | null;
+	/** Does not include Destinations and Robots */
 	public get Vertices(): Vertex[] {
 		if (!this.vertices) {
 			this.vertices = [];
@@ -204,6 +207,14 @@ export default class Model {
 		}
 	}
 
+	// TODO: Enhance this, this can use a map
+	public getVertexByLocation(p: fabric.Point): Vertex | undefined {
+		for (const v of this.Vertices) {
+			if (p.eq(v.location)) return v;
+		}
+		return undefined;
+	}
+
 	// public simulationInfoIncreaseTotalNodes(): void {
 	// 	this.cachedTotalNodes++;
 	// 	if (this.cachedTotalNodes - this._simulationInfoReactComp.state.totalNodes > this.PROGRESS_UPDATE_MARGIN) {
@@ -237,6 +248,10 @@ export default class Model {
 		forEach(this.SolutionPaths, (path) => {
 			path.remove();
 		});
+		if (this.CablePath) {
+			this.CablePath.remove();
+		}
+		this.CablePath = undefined;
 		this.SolutionPaths = {};
 		this.Solutions = {};
 		this.gapsPQPair = {};

@@ -5,6 +5,7 @@ import { VertexVisitState } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 import Renderer from "../viewer/renderer-service";
+import { Cable } from "../model/cable";
 
 export function Plan(): void {
 	Model.Instance.reset();
@@ -18,6 +19,9 @@ export function Plan(): void {
 		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), { level: DEBUG_LEVEL.L3 });
 		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
 		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+		// This solution contains information about both parts of the cable
+		// We just need to traverse it right
+		Model.Instance.CablePath = new Cable(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
 	} else {
 		Renderer.Instance.render(true);
 		PrintDebug("No Solutions", { level: DEBUG_LEVEL.L3 });
@@ -62,14 +66,23 @@ function Visit(node: GapTreeNode): void {
 	if (node.depth === Model.Instance.CONSTANTS.DEPTH_LIMIT) {
 		return;
 	}
-	const gapPairs = GetGapPairs();
-	PrintDebug(gapPairs, { dontCallToString: true });
-	MakeGapTreeNodes(gapPairs, node);
+	const r0 = Model.Instance.Robots[0];
+	const r1 = Model.Instance.Robots[1];
+	r0.findGaps();
+	r1.findGaps();
+	if (node.anchor) {
+		const i = 0;
+		// TODO: Do top field stuff
+	} else {
+		const gapPairs = GetGapPairs();
+		PrintDebug(gapPairs, { dontCallToString: true });
+		MakeGapTreeNodes(gapPairs, node);
+	}
 }
 
 function CreateGapTreeRoot(): GapTreeNode {
-	const root = new GapTreeNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0]));
-	root.addChild(new GapTreeNode(new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1])));
+	const root = new GapTreeNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0]), undefined);
+	root.addChild(new GapTreeNode(new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1]), undefined));
 	return root;
 }
 

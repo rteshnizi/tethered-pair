@@ -18,7 +18,7 @@ export interface GapString {
 export class GapPair {
 	public first: LabeledGap;
 	public second: LabeledGap;
-	constructor(g1: LabeledGap, g2: LabeledGap, public possibleAnchors?: Vertex[]) {
+	constructor(g1: LabeledGap, g2: LabeledGap, public anchor?: Vertex) {
 		if (g1.robot.name < g2.robot.name) {
 			this.first = g1;
 			this.second = g2;
@@ -29,17 +29,25 @@ export class GapPair {
 	}
 
 	public toString(): string {
-		return GapPairToString(this.first, this.second);
+		return GapPairToString(this.first, this.second, this.anchor);
 	}
 }
 
 /** This function is not safe to use as it assumes the correct ordering. Use `MakeGapPairName()` instead. */
-function GapPairToString(first: LabeledGap, second: LabeledGap): string {
-	return `${first.toString()}-${second.toString()}`;
+function GapPairToString(first: LabeledGap, second: LabeledGap, anchor?: Vertex): string {
+	const anchorStr = anchor ? `x${anchor.toString()}` : "";
+	return `${first.toString()}-${second.toString()}${anchorStr}`;
 }
 
 export class LabeledGap {
 	constructor(public gap: Vertex, public robot: Robot) { }
+
+	public eq(other: LabeledGap): boolean {
+		// we don't need to check the robots because first always belongs to R0 and second to R1
+		if (this.gap.name !== other.gap.name) return false;
+		if (this.gap.name !== other.gap.name) return false;
+		return true;
+	}
 
 	public toString(): string {
 		return `(${this.robot.name},${this.gap.name})`;
@@ -56,8 +64,6 @@ export function GetGapPairs(): Map<string, GapPair> {
 	const r0 = Model.Instance.Robots[0];
 	const r1 = Model.Instance.Robots[1];
 
-	r0.findGaps();
-	r1.findGaps();
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
 			const l1 = new LabeledGap(g1, r0);
@@ -86,8 +92,15 @@ export function GetGapPairs(): Map<string, GapPair> {
 				if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
 			});
 			if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
-			const pair = new GapPair(l1, l2, possibleAnchors);
-			pairs.set(pair.toString(), pair);
+			if (possibleAnchors.length > 0) {
+				possibleAnchors.forEach((a) => {
+					const pair = new GapPair(l1, l2, a);
+					pairs.set(pair.toString(), pair);
+				});
+			} else {
+				const pair = new GapPair(l1, l2);
+				pairs.set(pair.toString(), pair);
+			}
 		}
 	}
 	return pairs;
@@ -165,12 +178,18 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 }
 
 export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
+	// we are both staying then we shouldn't only one of us at a time should wait
 	gapPairs.forEach((gapPair) => {
+		// So here is the tricky part, when we are adding the Tree Nodes we are in R1
+		// So parent.parent is R0 and is associated with first
+		// This if is here so both robot don't stay at the same location forever because that has the lowest cost+H
+		if (gapPair.first.eq(parent.parent!.val) && gapPair.second.eq(parent.val)) return;
+
 		let gtn = parent.isChild(gapPair.first);
 		if (!gtn) {
-			gtn = new GapTreeNode(gapPair.first);
+			gtn = new GapTreeNode(gapPair.first, gapPair.anchor);
 			if (!parent.addChild(gtn)) return;
 		}
-		gtn.addChild(new GapTreeNode(gapPair.second));
+		gtn.addChild(new GapTreeNode(gapPair.second, gapPair.anchor));
 	});
 }
