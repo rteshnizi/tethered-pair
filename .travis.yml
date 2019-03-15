@@ -8,3 +8,7 @@ after_success:
 cache: npm
 git:
   depth: false
+# safelist
+branches:
+  only:
+  - master

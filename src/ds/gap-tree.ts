@@ -1,6 +1,7 @@
-import { LabeledGap } from "../planner/gap-pairs";
+import { LabeledGap } from "../planner/labeled-gap";
 import Model from "../model/model-service";
 import { GTNPriorityQueue } from "./priority-queue";
+import { Vertex } from "../model/vertex";
 
 export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
@@ -23,17 +24,38 @@ export class GapTreeNode {
 	/** You can't set the cost directly, you need to add the node to its parent and it will automatically update the cost */
 	public get cost(): number { return this._cost; }
 
-	constructor(public val: LabeledGap) {
+	/** From the first anchor on the other end up to my anchor */
+	private _consumedCable: number;
+	/** From the first anchor on the other end up to my anchor */
+	private get consumedCable(): number { return this._consumedCable; }
+
+	constructor(public val: LabeledGap, public anchor: Vertex | undefined) {
 		this._children = new Map();
 		this._cost = 0;
 		this._depth = 0;
+		this._consumedCable = 0;
 	}
 
 	public addChild(node: GapTreeNode): boolean {
-		// Tested with current solution, didn't work well
-		// const currentSolution = Model.Instance.Solutions[node.val.robot.name];
-		// if (this.parent && currentSolution && currentSolution.cost < this.parent.cost + this.parent.val.gap.location.distanceFrom(node.val.gap.location)) {
-		// If the node exists with a higher cost just update the parent and cost.
+		// FIXME: This might change for the bottom field because we might need this tree node for popping
+		// I actually think this is okay, I just need to add the logic for popping in here
+		// But since I don't have the logic, I am preventing it for now.
+		// In the case of consecutive push and pops the fact that that is extra cost will prevent such a node to be chosen
+		if (node.anchor && this.parent && this.parent.anchor) {
+			if (node.val.gap.location.eq(node.anchor.location) && node.anchor.name === this.parent.anchor.name) {
+				return false; // This should be updated to popping. read above
+			}
+		}
+		/** From the potential node's anchor to the gap it's chasing */
+		const c1 = this.cableNeededFromAnchorToGap(node);
+		/** From the potential node's anchor to my anchor */
+		const c2 = this.cableNeededFromHerAnchorToNextAnchorOnTheCable(node);
+		// From the other Robot on the other end to its anchor
+		// const c3 = this.cableNeededFromAnchorToGap(this);
+
+		if (c1 + c2 + this.consumedCable /*+ c3*/ > Model.Instance.CableLength) {
+			return false;
+		}
 		const maxSolution = Model.Instance.getMaxSolution();
 		// Not Interested in path longer than current solution
 		if (this.parent && maxSolution && maxSolution.cost < this.parent.cost + this.parent.val.gap.location.distanceFrom(node.val.gap.location)) {
@@ -41,6 +63,7 @@ export class GapTreeNode {
 		}
 		this._children.set(node.toString(), node);
 		node._parent = this;
+		node._consumedCable = this.consumedCable + c2;
 		if (this.parent) node._depth = this.parent.depth + 1;
 		node.updateCost();
 		return true;
@@ -65,6 +88,21 @@ export class GapTreeNode {
 		// 	this._children.set(node.toString(), node);
 		// 	current.updateCost();
 		// }
+	}
+
+	private cableNeededFromAnchorToGap(node: GapTreeNode): number {
+		if (!node.anchor) return 0;
+		const cableNeededForThisStep = node.anchor.location.distanceFrom(node.val.gap.location);
+		return cableNeededForThisStep;
+	}
+
+	private cableNeededFromHerAnchorToNextAnchorOnTheCable(node: GapTreeNode): number {
+		if (!node.anchor) return 0;
+		if (!this.anchor) return 0;
+		if (!this.parent) return 0;
+		if (!this.parent.anchor) return 0;
+		const cableNeededUpToAnchor = node.anchor.location.distanceFrom(this.parent.anchor.location);
+		return cableNeededUpToAnchor;
 	}
 
 	public isChild(gap: LabeledGap): GapTreeNode | undefined {
@@ -111,7 +149,7 @@ export class GapTreeNode {
 		return `[${this.val.toString()}-C${this.cost.toFixed(1)}-H${this.heuristic().toFixed(1)}]`;
 	}
 	public toString(): string {
-		return this.val.toString();
+		return `${this.val.toString()}`;
 	}
 }
 

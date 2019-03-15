@@ -10,6 +10,7 @@ import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
 import { Path } from "./path";
 import { GTNPriorityQueue } from "../ds/priority-queue";
 import { DEBUG_LEVEL, PrintDebug } from "../utils/debug";
+import { Cable } from "./cable";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
@@ -22,7 +23,8 @@ export default class Model {
 	public gapsPQPair: GapsPQPair;
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
-		DEPTH_LIMIT: 10,
+		DEPTH_LIMIT: 5,
+		DEBUG_LEVEL: DEBUG_LEVEL.L3,
 	};
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
@@ -63,12 +65,12 @@ export default class Model {
 		const min = node1.cost <= node2.cost ? node1 : node2;
 		const currentMax = this.getMaxSolution();
 		if (!currentMax || max.cost < currentMax.cost) {
-			PrintDebug("Minimized Max Solution", DEBUG_LEVEL.L3);
+			PrintDebug(`Minimized Max Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
 			update(node1, node2);
 		} else if (currentMax && max.cost === currentMax.cost) {
 			const currentMin = this.getMinSolution();
 			if (!currentMin || min.cost < currentMin.cost) {
-				PrintDebug("Max is the same.. Minimized Min Solution", DEBUG_LEVEL.L3);
+				PrintDebug(`Max is the same.. Minimized Min Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
 				update(node1, node2);
 			}
 		}
@@ -101,16 +103,25 @@ export default class Model {
 	private obstacles: Obstacles;
 	public get Obstacles(): Readonly<Obstacles> { return this.obstacles; }
 
+	/** This maps the `vertex.name` to its index in `this.Vertices` */
+	private anchorsMap: Set<string>;
+	public isAnchor(v: Vertex): boolean {
+		// The line below is just to ensure we have populated the set.
+		this.Anchors;
+		return this.anchorsMap.has(v.name);
+	}
+
 	private anchors?: Vertex[];
 	public get Anchors(): Vertex[] {
-		const d1 = this.Robots[0].Destination;
-		const d2 = this.Robots[1].Destination;
-		if (!d1 || !d2) return [];
 		if (this.anchors) return this.anchors;
+		if (this.Robots[0].Destination === null) return [];
+		if (this.Robots[1].Destination === null) return [];
 		this.anchors = [];
-		this.Vertices.forEach((v) => {
-			if (v.canAnchor(d1, d2, this.CableLength)) {
-				v.setAsAnchor();
+		this.Vertices.forEach((v, ind) => {
+			// @ts-ignore there is a null check above that TS is not seeing
+			if (v.canAnchor(this.Robots[0].Destination, this.Robots[1].Destination, this.CableLength)) {
+				this.anchorsMap.add(v.name);
+				v.setAsGlobalAnchor();
 				// @ts-ignore anchors is set above
 				this.anchors.push(v);
 			}
@@ -120,6 +131,7 @@ export default class Model {
 
 	// @ts-ignore Assigned in reset()
 	public SolutionPaths: Paths;
+	public CablePath: Cable | undefined;
 
 	private _cableLength: number;
 	public set CableLength(l: number) { this._cableLength = l; }
@@ -127,6 +139,7 @@ export default class Model {
 
 	private cable: Vertex[];
 	private vertices: Vertex[] | null;
+	/** Does not include Destinations and Robots */
 	public get Vertices(): Vertex[] {
 		if (!this.vertices) {
 			this.vertices = [];
@@ -168,6 +181,7 @@ export default class Model {
 		this.cable = [];
 		this.vertices = null;
 		this.AllEntities = new Map();
+		this.anchorsMap = new Set();
 		this.reset();
 	}
 
@@ -191,6 +205,16 @@ export default class Model {
 			this.obstacles[ind].vertices.forEach((v) => { v.remove(); })
 			this.obstacles[ind].remove();
 		}
+	}
+
+	// TODO: Enhance this, this can use a map
+	public getVertexByLocation(p: fabric.Point): Vertex | undefined {
+		for (const v of this.Vertices) {
+			if (p.eq(v.location)) return v;
+		}
+		if (p.eq(this.Robots[0].location)) return this.Robots[0];
+		if (p.eq(this.Robots[1].location)) return this.Robots[1];
+		return undefined;
 	}
 
 	// public simulationInfoIncreaseTotalNodes(): void {
@@ -226,6 +250,10 @@ export default class Model {
 		forEach(this.SolutionPaths, (path) => {
 			path.remove();
 		});
+		if (this.CablePath) {
+			this.CablePath.remove();
+		}
+		this.CablePath = undefined;
 		this.SolutionPaths = {};
 		this.Solutions = {};
 		this.gapsPQPair = {};

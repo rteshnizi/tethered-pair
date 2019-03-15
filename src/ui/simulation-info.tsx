@@ -3,6 +3,8 @@ import { BindMemberMethods } from '../utils/react';
 import Model from '../model/model-service';
 import * as Mui from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { DEBUG_LEVEL } from '../utils/debug';
+import { map } from 'lodash';
 
 export class SimulationInfoState {
 	public expandedNodes: number;
@@ -10,12 +12,14 @@ export class SimulationInfoState {
 	public iteration: number;
 	public maxIterations: string;
 	public maxDepth: string;
+	public debugLevel: DEBUG_LEVEL;
 	constructor() {
 		this.expandedNodes = 0;
 		this.totalNodes = 0;
 		this.iteration = 0;
 		this.maxIterations = `${Model.Instance.CONSTANTS.ITERATION_LIMIT}`;
 		this.maxDepth = `${Model.Instance.CONSTANTS.DEPTH_LIMIT}`;
+		this.debugLevel = Model.Instance.CONSTANTS.DEBUG_LEVEL;
 	}
 }
 
@@ -55,6 +59,26 @@ export class SimulationInfo extends React.Component<{}, SimulationInfoState> {
 				{/* <Mui.LinearProgress variant="buffer" value={this.state.expandedNodes} valueBuffer={this.state.totalNodes} /> */}
 				{/* <Mui.LinearProgress variant="determinate" value={this.state.expandedNodes} /> */}
 				<div>
+					<Mui.FormControl style={{ width: "100%" }}>
+						<Mui.InputLabel htmlFor="debug-level">Debug Verbosity</Mui.InputLabel>
+						<Mui.Select
+							value={this.state.debugLevel}
+							inputProps={{ name: 'preset', id: 'preset-select' }}
+							onChange={(e) => {
+								// @ts-ignore value is a number not a string
+								const val = e.target.value as DEBUG_LEVEL;
+								Model.Instance.CONSTANTS.DEBUG_LEVEL = val;
+								this.setState({ debugLevel: val });
+							}}
+						>
+							{
+								Object.keys(DEBUG_LEVEL).
+									filter((str) => isNaN(Number(str))).
+									map((level, ind) => <Mui.MenuItem key={`sel-item-${ind}`} value={ind}>{level}</Mui.MenuItem>)
+								// map(DEBUG_LEVEL, (level, name) => <Mui.MenuItem key={`sel-item-${name}`} value={level}>{name}</Mui.MenuItem>)
+							}
+						</Mui.Select>
+					</Mui.FormControl>
 					<Mui.Tooltip title="Max Iterations" placement="top">
 						<Mui.TextField
 							fullWidth={true}

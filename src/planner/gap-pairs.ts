@@ -1,8 +1,10 @@
 import Model from "../model/model-service";
-import { Geometry } from "../utils/geometry";
-import { Vertex } from "../model/vertex";
-import { Robot } from "../model/robot";
+import { Geometry, IsPolygonEmptyState } from "../utils/geometry";
+import { Vertex, VisibilityResult } from "../model/vertex";
 import { GapTreeNode } from "../ds/gap-tree";
+import { PrintDebug } from "../utils/debug";
+import { CanAnchorFromVertices as CanAnchorFromVertices } from "./anchoring";
+import { LabeledGap } from "./labeled-gap";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
@@ -36,14 +38,6 @@ function GapPairToString(first: LabeledGap, second: LabeledGap): string {
 	return `${first.toString()}-${second.toString()}`;
 }
 
-export class LabeledGap {
-	constructor(public gap: Vertex, public robot: Robot) { }
-
-	public toString(): string {
-		return `(${this.robot.name},${this.gap.name})`;
-	}
-}
-
 export function GapPairExists(gapPairs: Map<string, GapPair>, g1: LabeledGap, g2: LabeledGap): boolean {
 	return gapPairs.has(MakeGapPairName(g1, g2)) || gapPairs.has(MakeGapPairName(g1, g2));
 }
@@ -53,17 +47,58 @@ export function GetGapPairs(): Map<string, GapPair> {
 	const pairs: Map<string, GapPair> = new Map();
 	const r0 = Model.Instance.Robots[0];
 	const r1 = Model.Instance.Robots[1];
+	r0.findGaps(true);
+	r1.findGaps(true);
 
-	r0.findGaps();
-	r1.findGaps();
 	for (const g1 of r0.gaps) {
 		for (const g2 of r1.gaps) {
-			if (!g1.isVisible(g2)) continue;
+			// FIXME: THIS CASE IS DEFINITELY BUGGY
+			let l1 = new LabeledGap(g1, r0, undefined);
+			let l2 = new LabeledGap(g2, r1, undefined);
+			// if (GapPairExists(pairs, l1, l2)) continue;
+
+			const possibleAnchors: Vertex[] = [];
+			// const visResult: VisibilityResult[] = [];
+			// // TODO: What if the gap is farther than cable length?
+			// if (!g1.isVisible(g2, visResult)) {
+			// 	for (const vis of visResult) {
+			// 		vis.edges.forEach((ps) => {
+			// 			// Both gaps as well both robots should be able to see the anchor if they want to anchor around it
+			// 			if (CanAnchorFromVertices([g1, g2, r0, r1], ps.v1)) possibleAnchors.push(ps.v1);
+			// 			if (CanAnchorFromVertices([g1, g2, r0, r1], ps.v2)) possibleAnchors.push(ps.v2);
+			// 		});
+			// 	}
+			// 	// If the gaps can't see each other AND there are no possible anchors, then they are not compatible
+			// 	if (possibleAnchors.length === 0) continue;
+			// }
 			const verts = [r0.location, g1.location, g2.location, r1.location];
-			if (!Geometry.IsPolygonEmpty(verts)) continue;
-			const l1 = new LabeledGap(g1, r0);
-			const l2 = new LabeledGap(g2, r1);
-			if (!GapPairExists(pairs, l1, l2)) {
+			const innerVerts: Vertex[] = [];
+			const result = Geometry.IsPolygonEmpty(verts, innerVerts);
+			PrintDebug(innerVerts);
+			if (result.state === IsPolygonEmptyState.NotEmpty) continue;
+			innerVerts.forEach((p) => {
+				// if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
+				if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
+					// Anchor the current gaps to the anchor and next time it will be single gap problem
+					possibleAnchors.push(p);
+					let tmpV: Vertex | undefined;
+					tmpV = Model.Instance.getVertexByLocation(r0.location);
+					if (tmpV) {
+						l1 = new LabeledGap(tmpV, r0, p);
+					}
+					tmpV = Model.Instance.getVertexByLocation(r1.location);
+					if (tmpV) {
+						l2 = new LabeledGap(tmpV, r1, p);
+					}
+				}
+			});
+			if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
+			if (possibleAnchors.length > 0) {
+				possibleAnchors.forEach((a) => {
+					const pair = new GapPair(l1, l2);
+					pairs.set(pair.toString(), pair);
+				});
+			} else {
 				const pair = new GapPair(l1, l2);
 				pairs.set(pair.toString(), pair);
 			}
@@ -144,12 +179,18 @@ function MakeGapPairName(g1: LabeledGap, g2: LabeledGap) {
 }
 
 export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void {
+	// we are both staying then we shouldn't only one of us at a time should wait
 	gapPairs.forEach((gapPair) => {
+		// So here is the tricky part, when we are adding the Tree Nodes we are in R1
+		// So parent.parent is R0 and is associated with first
+		// This if is here so both robot don't stay at the same location forever because that has the lowest cost+H
+		if (gapPair.first.eq(parent.parent!.val) && gapPair.second.eq(parent.val)) return;
+
 		let gtn = parent.isChild(gapPair.first);
 		if (!gtn) {
-			gtn = new GapTreeNode(gapPair.first);
+			gtn = new GapTreeNode(gapPair.first, gapPair.first.anchor);
 			if (!parent.addChild(gtn)) return;
 		}
-		gtn.addChild(new GapTreeNode(gapPair.second));
+		gtn.addChild(new GapTreeNode(gapPair.second, gapPair.second.anchor));
 	});
 }
