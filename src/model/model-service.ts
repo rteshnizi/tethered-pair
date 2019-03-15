@@ -23,7 +23,7 @@ export default class Model {
 	public gapsPQPair: GapsPQPair;
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
-		DEPTH_LIMIT: 10,
+		DEPTH_LIMIT: 5,
 		DEBUG_LEVEL: DEBUG_LEVEL.L3,
 	};
 	public ITERATION = 0;

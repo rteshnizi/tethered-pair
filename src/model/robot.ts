@@ -63,7 +63,7 @@ export class Robot extends Vertex {
 		}
 		// To give a chance of unequal steps for gap pairs
 		if (isStayingAnOption) {
-			const currentVert = Model.Instance.getVertexByLocation(this.location);
+			const currentVert = this.myVertex();
 			if (currentVert) {
 				this.gaps.push(currentVert);
 			}
@@ -72,6 +72,10 @@ export class Robot extends Vertex {
 			checkGap(this.Destination, 0, []);
 		}
 		Model.Instance.getVerticesInBoundingBox().forEach(checkGap);
+	}
+
+	public myVertex(): Vertex | undefined {
+		return Model.Instance.getVertexByLocation(this.location);
 	}
 
 	public addVertToVisited(v: Vertex): void {
