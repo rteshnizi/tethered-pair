@@ -1,6 +1,6 @@
 import * as GapPairFuncs from "./gap-pairs";
 import Model from "../model/model-service";
-import { VertexVisitState, Vertex } from "../model/vertex";
+import { VertexVisitState } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 import Renderer from "../viewer/renderer-service";
@@ -11,10 +11,15 @@ import { GapTreePairNode } from "../ds/gap-tree-pair";
 
 export function Plan(): void {
 	Model.Instance.reset();
-	const root = CreateGapTreeRoot();
+	const root = CreateRoot();
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
 	// window.requestAnimationFrame(DFSVisitLayer.bind(window, root));
-	DFSVisitLayer(root);
+	Model.Instance.openSet.push(root);
+	const origin1 = Model.Instance.Robots[0].location;
+	const origin2 = Model.Instance.Robots[1].location;
+	AStar();
+	Model.Instance.Robots[0].location = origin1;
+	Model.Instance.Robots[1].location = origin2;
 	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, { level: DEBUG_LEVEL.L3 });
 	if (Model.Instance.foundSolution()) {
 		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), { level: DEBUG_LEVEL.L3 });
@@ -30,39 +35,32 @@ export function Plan(): void {
 	}
 }
 
-function DFSVisitLayer(node: GapTreePairNode): void {
-	if (Model.Instance.ITERATION === Model.Instance.CONSTANTS.ITERATION_LIMIT) return;
-	Model.Instance.ITERATION++;
-	const originalLocation = node.val.robot.location;
-	node.val.robot.location = node.val.gap.location;
-	// Eliminates cycles in the paths
-	node.val.gap.setVisitState(node.val.robot, VertexVisitState.VISITING);
-	// Only search for gaps when we have decided for both robots
-	if (node.val.robot.name === Model.Instance.Robots[1].name) {
+function AStar(): void {
+	let node: GapTreePairNode;
+	while (Model.Instance.ITERATION !== Model.Instance.CONSTANTS.ITERATION_LIMIT && !Model.Instance.openSet.isEmpty()) {
+		Model.Instance.ITERATION++;
+		node = Model.Instance.openSet.pop();
+		node.val.first.robot.location = node.val.first.gap.location;
+		node.val.second.robot.location = node.val.second.gap.location;
+		// Eliminates cycles in the paths
+		node.val.first.gap.setVisitState(node.val.first.robot, VertexVisitState.VISITING);
+		node.val.second.gap.setVisitState(node.val.second.robot, VertexVisitState.VISITING);
 		Visit(node);
+		node.val.first.gap.setVisitState(node.val.first.robot, VertexVisitState.UNVISITED);
+		node.val.second.gap.setVisitState(node.val.second.robot, VertexVisitState.UNVISITED);
 	}
-	const children = node.createChildrenPq();
-	while (!children.isEmpty()) {
-		const n = children.pop();
-		// window.requestAnimationFrame(DFSVisitLayer.bind(window, n));
-		DFSVisitLayer(n);
-	}
-	node.val.robot.location = originalLocation;
-	node.val.gap.setVisitState(node.val.robot, VertexVisitState.UNVISITED);
 }
 
 function Visit(node: GapTreePairNode): void {
 	// Search termination condition
-	if (IsAtDestination(node)) {
+	if (node.isAtDestination()) {
 		PrintDebug("----------------------", { level: DEBUG_LEVEL.L2 });
-		PrintDebug(`S -> ${node.parent!.pathString()}`, { level: DEBUG_LEVEL.L2 });
 		PrintDebug(`S -> ${node.pathString()}`, { level: DEBUG_LEVEL.L2 });
 		// @ts-ignore if they are both at destination then parent is not undefined
 		Model.Instance.addSolutions(node, node.parent);
 		return;
 	}
 	PrintDebug("----------------------");
-	PrintDebug(node.parent!.pathString());
 	PrintDebug(node.pathString());
 	// Don't expand if reached max depth
 	if (node.depth === Model.Instance.CONSTANTS.DEPTH_LIMIT) {
@@ -71,11 +69,10 @@ function Visit(node: GapTreePairNode): void {
 	// We should try anchoring if the robots both can see their destination
 	// that's the shortest way
 	// We should also try anchoring, if previous gap chasings have caused an anchor
-	// See Preset 2
 	// THEY MUST HAVE ANCHORS AT THE SAME TIME. THAT'S THE WHOLE POINT
-	if (node.anchor && node.parent && node.parent.anchor) {
-		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(Model.Instance.Robots[0], node.parent.anchor);
-		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(Model.Instance.Robots[1], node.anchor);
+	if (node.val.first.anchor && node.val.second.anchor) {
+		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.first.robot, node.val.first.anchor);
+		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.second.robot, node.val.second.anchor);
 		SingleGapFuncs.MakeGapTreeNodes(r0Gaps, r1Gaps, node);
 	} else {
 		const gapPairs = GapPairFuncs.GetGapPairs();
@@ -84,13 +81,10 @@ function Visit(node: GapTreePairNode): void {
 	}
 }
 
-function CreateGapTreeRoot(): GapTreePairNode {
-	const root = new GapTreePairNode(new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0], undefined), undefined);
+function CreateRoot(): GapTreePairNode {
+	const l1 = new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0], undefined);
+	const l2 = new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1], undefined);
+	const g = new GapPairFuncs.GapPair(l1, l2);
+	const root = new GapTreePairNode(g);
 	return root;
-}
-
-/** When we are visiting the gap tree node belongs to R1 and the parent belongs to R0 */
-function IsAtDestination(node: GapTreePairNode): boolean {
-	// Since we are at R1, there always is a parent
-	return node.isAtDestination() && node.parent!.isAtDestination();
 }

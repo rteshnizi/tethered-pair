@@ -29,7 +29,7 @@ export class GapTreePairNode {
 
 	private _cost: Costs;
 	/** You can't set the cost directly, you need to add the node to its parent and it will automatically update the cost */
-	public get cost(): Costs { return this._cost; }
+	public get cost(): Readonly<Costs> { return this._cost; }
 
 	/** From the first anchor on the other end up to my anchor */
 	private _consumedCable: number;
@@ -38,7 +38,7 @@ export class GapTreePairNode {
 
 	constructor(public val: GapPair) {
 		this._children = new Map();
-		this._cost = { first: 0, second: 0};
+		this._cost = new Costs(0, 0);
 		this._depth = 0;
 		this._consumedCable = 0;
 	}
@@ -149,31 +149,31 @@ export class GapTreePairNode {
 
 	public isAtDestination(): boolean {
 		// @ts-ignore @types is wrong for these functions
-		return this.val.gap.location.eq(this.val.robot.Destination!.location);
+		const b1 = this.val.first.gap.location.eq(this.val.first.robot.Destination!.location);
+		// @ts-ignore @types is wrong for these functions
+		const b2 = this.val.second.gap.location.eq(this.val.second.robot.Destination!.location);
+		// @ts-ignore @types is wrong for these functions
+		return b1 && b2;
 	}
 
-	/**
-	 * Update the cost of this node and all its decedents recursively.
-	 * (Remember that the node alternate robots, so to calculate the cost for current robot I have to check this.parent.parent)
-	 */
+	/** Update the cost of this node and all its decedents recursively. */
 	private updateCost() {
 		if (!this.parent) return;
-		if (!this.parent.parent) return;
-		this._cost = this.parent.parent.cost + this.parent.parent.val.gap.location.distanceFrom(this.val.gap.location);
-		// this.children.forEach((c) => c.updateCost());
+		const c1 = this.parent.cost.first + this.parent.val.first.gap.location.distanceFrom(this.val.first.gap.location);
+		const c2 = this.parent.cost.second + this.parent.val.second.gap.location.distanceFrom(this.val.second.gap.location);
+		this._cost = new Costs(c1, c2);
 	}
 
 	public pathString(): string {
-		let str = "";
+		let str1 = "";
+		let str2 = "";
 		let node: GapTreePairNode | undefined = this;
 		while (node) {
-			str = `${node.toString()} -> ${str}`;
-			node = node.parent;
-			if (!node) break;
+			str1 = `${node.val.first.toString()} -> ${str1}`;
+			str2 = `${node.val.second.toString()} -> ${str2}`;
 			node = node.parent;
 		}
-		const max = Math.max(this.cost.first, this.cost.second);
-		return `(#${.toFixed(5)}) -> ${str}`;
+		return `(#${this.cost.first.toFixed(3)}) -> ${str1}\n(#${this.cost.second.toFixed(3)}) -> ${str2}\n`;
 	}
 
 	public heuristic(labeledGap: LabeledGap): number {
@@ -199,7 +199,9 @@ export function GtnpCostComparator(n1: GapTreePairNode, n2: GapTreePairNode): bo
 
 /** Lowest Cost+H First */
 export function GtnpAStarComparator(n1: GapTreePairNode, n2: GapTreePairNode): boolean {
-	return n1.cost + n1.heuristic() < n2.cost + n2.heuristic();
+	const c1 = Math.max(n1.cost.first + n1.heuristic(n1.val.first), n1.cost.second + n1.heuristic(n1.val.second));
+	const c2 = Math.max(n2.cost.first + n2.heuristic(n2.val.first), n2.cost.second + n2.heuristic(n2.val.second));
+	return c1 < c2;
 }
 
 interface CableCheckResult {
