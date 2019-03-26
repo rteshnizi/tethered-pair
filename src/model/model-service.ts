@@ -16,11 +16,9 @@ type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
 type Paths = { [robotName: string]: Path };
 type SolutionPair = { [robotName: string]: GapTreeNode };
-type GapsPQPair = { [robotName: string]: GTNPriorityQueue };
+// type GapsPQPair = { [robotName: string]: GTNPriorityQueue };
 
 export default class Model {
-	// @ts-ignore Assigned in reset()
-	public gapsPQPair: GapsPQPair;
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
 		DEPTH_LIMIT: 5,
@@ -256,7 +254,6 @@ export default class Model {
 		this.CablePath = undefined;
 		this.SolutionPaths = {};
 		this.Solutions = {};
-		this.gapsPQPair = {};
 		this.ITERATION = 0;
 	}
 }

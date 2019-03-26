@@ -3,10 +3,10 @@ import Model from "../model/model-service";
 import { GTNPriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";
 
-export class GapTreeNode {
-	private _children: Map<string, GapTreeNode>;
+export class GapTreePairNode {
+	private _children: Map<string, GapTreePairNode>;
 	/** The user has to cache this */
-	public createChildrenPq(): GTNPriorityQueue<GapTreeNode> {
+	public createChildrenPq(): GTNPriorityQueue<GapTreePairNode> {
 		const pQ = new GTNPriorityQueue(GtnAStarComparator);
 		this._children.forEach((n) => {
 			pQ.push(n);
@@ -14,8 +14,8 @@ export class GapTreeNode {
 		return pQ;
 	}
 
-	private _parent?: GapTreeNode;
-	public get parent(): GapTreeNode | undefined { return this._parent; }
+	private _parent?: GapTreePairNode;
+	public get parent(): GapTreePairNode | undefined { return this._parent; }
 
 	private _depth: number;
 	public get depth(): number { return this._depth; }
@@ -36,7 +36,7 @@ export class GapTreeNode {
 		this._consumedCable = 0;
 	}
 
-	public addChild(node: GapTreeNode): boolean {
+	public addChild(node: GapTreePairNode): boolean {
 		// FIXME: This might change for the bottom field because we might need this tree node for popping
 		// I actually think this is okay, I just need to add the logic for popping in here
 		// But since I don't have the logic, I am preventing it for now.
@@ -90,13 +90,13 @@ export class GapTreeNode {
 		// }
 	}
 
-	private cableNeededFromAnchorToGap(node: GapTreeNode): number {
+	private cableNeededFromAnchorToGap(node: GapTreePairNode): number {
 		if (!node.anchor) return 0;
 		const cableNeededForThisStep = node.anchor.location.distanceFrom(node.val.gap.location);
 		return cableNeededForThisStep;
 	}
 
-	private cableNeededFromHerAnchorToNextAnchorOnTheCable(node: GapTreeNode): number {
+	private cableNeededFromHerAnchorToNextAnchorOnTheCable(node: GapTreePairNode): number {
 		if (!node.anchor) return 0;
 		if (!this.anchor) return 0;
 		if (!this.parent) return 0;
@@ -105,7 +105,7 @@ export class GapTreeNode {
 		return cableNeededUpToAnchor;
 	}
 
-	public isChild(gap: LabeledGap): GapTreeNode | undefined {
+	public isChild(gap: LabeledGap): GapTreePairNode | undefined {
 		return this._children.get(gap.toString());
 	}
 
@@ -127,7 +127,7 @@ export class GapTreeNode {
 
 	public pathString(): string {
 		let str = "";
-		let node: GapTreeNode | undefined = this;
+		let node: GapTreePairNode | undefined = this;
 		while (node) {
 			str = `${node.toString()} -> ${str}`;
 			node = node.parent;
@@ -154,11 +154,11 @@ export class GapTreeNode {
 }
 
 /** Lowest Cost First */
-export function GtnCostComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+function GtnCostComparator(n1: GapTreePairNode, n2: GapTreePairNode): boolean {
 	return n1.cost < n2.cost;
 }
 
 /** Lowest Cost+H First */
-export function GtnAStarComparator(n1: GapTreeNode, n2: GapTreeNode): boolean {
+function GtnAStarComparator(n1: GapTreePairNode, n2: GapTreePairNode): boolean {
 	return n1.cost + n1.heuristic() < n2.cost + n2.heuristic();
 }

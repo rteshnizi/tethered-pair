@@ -1,18 +1,16 @@
-import { GapTreeNode } from "./gap-tree";
-
 /** Returns true if n1 should come Prior to n2 */
-type GapTreeNodeComparator = (n1: GapTreeNode, n2: GapTreeNode) => boolean;
+type GapTreeNodeComparator<T> = (n1: T, n2: T) => boolean;
 
 /**
  * Didn't feel like making it a generic
  * https://stackoverflow.com/a/42919752/750567
  */
-export class GTNPriorityQueue {
+export class GTNPriorityQueue<T> {
 	private top = 0;
-	private heap: GapTreeNode[];
-	private comparator: GapTreeNodeComparator;
+	private heap: T[];
+	private comparator: GapTreeNodeComparator<T>;
 
-	constructor(comparator: GapTreeNodeComparator) {
+	constructor(comparator: GapTreeNodeComparator<T>) {
 		this.heap = [];
 		this.comparator = comparator;
 	}
@@ -63,11 +61,11 @@ export class GTNPriorityQueue {
 		return this.size() === 0;
 	}
 
-	public peek(): GapTreeNode {
+	public peek(): T {
 		return this.heap[this.top];
 	}
 
-	public pushAll(values: GapTreeNode[]): number {
+	public pushAll(values: T[]): number {
 		values.forEach(value => {
 			this.heap.push(value);
 			this.siftUp();
@@ -75,13 +73,13 @@ export class GTNPriorityQueue {
 		return this.size();
 	}
 
-	public push(value: GapTreeNode): number {
+	public push(value: T): number {
 		this.heap.push(value);
 		this.siftUp();
 		return this.size();
 	}
 
-	public pop(): GapTreeNode {
+	public pop(): T {
 		const poppedValue = this.peek();
 		const bottom = this.size() - 1;
 		if (bottom > this.top) {
@@ -92,7 +90,7 @@ export class GTNPriorityQueue {
 		return poppedValue;
 	}
 
-	public replace(value: GapTreeNode): GapTreeNode {
+	public replace(value: T): T {
 		const replacedValue = this.peek();
 		this.heap[this.top] = value;
 		this.siftDown();
