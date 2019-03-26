@@ -5,7 +5,7 @@ type GapTreeNodeComparator<T> = (n1: T, n2: T) => boolean;
  * Didn't feel like making it a generic
  * https://stackoverflow.com/a/42919752/750567
  */
-export class GTNPriorityQueue<T> {
+export class PriorityQueue<T> {
 	private top = 0;
 	private heap: T[];
 	private comparator: GapTreeNodeComparator<T>;

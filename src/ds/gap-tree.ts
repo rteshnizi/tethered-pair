@@ -1,13 +1,13 @@
 import { LabeledGap } from "../planner/labeled-gap";
 import Model from "../model/model-service";
-import { GTNPriorityQueue } from "./priority-queue";
+import { PriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";
 
 export class GapTreeNode {
 	private _children: Map<string, GapTreeNode>;
 	/** The user has to cache this */
-	public createChildrenPq(): GTNPriorityQueue<GapTreeNode> {
-		const pQ = new GTNPriorityQueue(GtnAStarComparator);
+	public createChildrenPq(): PriorityQueue<GapTreeNode> {
+		const pQ = new PriorityQueue(GtnAStarComparator);
 		this._children.forEach((n) => {
 			pQ.push(n);
 		});

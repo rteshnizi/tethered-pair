@@ -5,6 +5,7 @@ import * as Anchoring from "./anchoring";
 import { Geometry, IsPolygonEmptyState } from "../utils/geometry";
 import { PrintDebug } from "../utils/debug";
 import { GapTreeNode } from "../ds/gap-tree";
+import { GapTreePairNode } from "../ds/gap-tree-pair";
 
 export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[] {
 	const gaps: LabeledGap[] = [];
@@ -63,6 +64,21 @@ export function MakeGapTreeNodes(r0Gaps: LabeledGap[], r1Gaps: LabeledGap[], par
 		}
 		for (const r1Gap of r1Gaps) {
 			gtn.addChild(new GapTreeNode(r1Gap, r1Gap.anchor));
+		}
+	}
+}
+
+export function MakeGapTreePairNodes(r0Gaps: LabeledGap[], r1Gaps: LabeledGap[], parent: GapTreePairNode): void {
+	// Add the tree nodes for R0 under the R1 Parent and keep them
+	// Then add the ones for R1
+	for (const r0Gap of r0Gaps) {
+		let gtn = parent.isChild(r0Gap);
+		if (!gtn) {
+			gtn = new GapTreePairNode(r0Gap, r0Gap.anchor);
+			if (!parent.addChild(gtn)) continue;
+		}
+		for (const r1Gap of r1Gaps) {
+			gtn.addChild(new GapTreePairNode(r1Gap, r1Gap.anchor));
 		}
 	}
 }

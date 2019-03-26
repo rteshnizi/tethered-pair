@@ -2,23 +2,24 @@ import { Entity } from "./entity";
 import { Obstacle } from "./obstacle";
 import { Robot } from "./robot";
 import { Vertex, VertexVisitState } from "./vertex";
-import { Destination } from "./destination";
 import { forEach } from "lodash";
 import { Geometry, Fabric2Pts } from "../utils/geometry";
 import { GapTreeNode } from "../ds/gap-tree";
 import { SimulationInfoState, SimulationInfo } from "../ui/simulation-info";
 import { Path } from "./path";
-import { GTNPriorityQueue } from "../ds/priority-queue";
+import { PriorityQueue } from "../ds/priority-queue";
 import { DEBUG_LEVEL, PrintDebug } from "../utils/debug";
 import { Cable } from "./cable";
+import { GapTreePairNode, GtnpAStarComparator } from "../ds/gap-tree-pair";
 
 type Robots = { [index: number]: Robot };
 type Obstacles = { [index: number]: Obstacle };
 type Paths = { [robotName: string]: Path };
 type SolutionPair = { [robotName: string]: GapTreeNode };
-// type GapsPQPair = { [robotName: string]: GTNPriorityQueue };
 
 export default class Model {
+	// @ts-ignore Assigned in reset()
+	public openSet: PriorityQueue<GapTreePairNode>;
 	public CONSTANTS = {
 		ITERATION_LIMIT: 5000,
 		DEPTH_LIMIT: 5,
@@ -251,6 +252,7 @@ export default class Model {
 		if (this.CablePath) {
 			this.CablePath.remove();
 		}
+		this.openSet = new PriorityQueue<GapTreePairNode>(GtnpAStarComparator);
 		this.CablePath = undefined;
 		this.SolutionPaths = {};
 		this.Solutions = {};
