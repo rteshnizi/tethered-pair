@@ -9,7 +9,7 @@ import { LabeledGap } from "./labeled-gap";
 import * as SingleGapFuncs from "./single-gap";
 import { GapTreePairNode } from "../ds/gap-tree-pair";
 
-export function Plan(): void {
+export function Alg2(): void {
 	Model.Instance.reset();
 	const root = CreateRoot();
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
@@ -46,6 +46,9 @@ function AStar(): void {
 		node.val.first.gap.setVisitState(node.val.first.robot, VertexVisitState.VISITING);
 		node.val.second.gap.setVisitState(node.val.second.robot, VertexVisitState.VISITING);
 		Visit(node);
+		node.children.forEach((n) => {
+			Model.Instance.openSet.push(n);
+		});
 		node.val.first.gap.setVisitState(node.val.first.robot, VertexVisitState.UNVISITED);
 		node.val.second.gap.setVisitState(node.val.second.robot, VertexVisitState.UNVISITED);
 	}
@@ -73,11 +76,11 @@ function Visit(node: GapTreePairNode): void {
 	if (node.val.first.anchor && node.val.second.anchor) {
 		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.first.robot, node.val.first.anchor);
 		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.second.robot, node.val.second.anchor);
-		SingleGapFuncs.MakeGapTreeNodes(r0Gaps, r1Gaps, node);
+		SingleGapFuncs.MakeGapTreePairNodes(r0Gaps, r1Gaps, node);
 	} else {
 		const gapPairs = GapPairFuncs.GetGapPairs();
 		PrintDebug(gapPairs, { dontCallToString: true });
-		GapPairFuncs.MakeGapTreeNodes(gapPairs, node);
+		GapPairFuncs.MakeGapTreePairNodes(gapPairs, node);
 	}
 }
 

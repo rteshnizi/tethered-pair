@@ -13,12 +13,8 @@ class Costs {
 export class GapTreePairNode {
 	private _children: Map<string, GapTreePairNode>;
 	/** The user has to cache this */
-	public createChildrenPq(): PriorityQueue<GapTreePairNode> {
-		const pQ = new PriorityQueue<GapTreePairNode>(GtnpAStarComparator);
-		this._children.forEach((n) => {
-			pQ.push(n);
-		});
-		return pQ;
+	public get children(): GapTreePairNode[] {
+		return Array.from(this._children.values());
 	}
 
 	private _parent?: GapTreePairNode;
@@ -88,9 +84,9 @@ export class GapTreePairNode {
 		const c1 = this.cableNeededFromAnchorToGap(node);
 		const c2 = this.cableNeededFromTheirAnchorToNextAnchorsOnTheCable(node);
 		if (c1 + c2 + this.consumedCable > Model.Instance.CableLength) {
-			return { c1, c2, thereIsNotEnoughCable: false };
+			return { c1, c2, thereIsNotEnoughCable: true };
 		}
-		return { c1, c2, thereIsNotEnoughCable: true };
+		return { c1, c2, thereIsNotEnoughCable: false };
 	}
 
 	private costIsHigherThanMaxCost(node: GapTreePairNode): boolean {

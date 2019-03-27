@@ -9,7 +9,7 @@ import { Cable } from "../model/cable";
 import { LabeledGap } from "./labeled-gap";
 import * as SingleGapFuncs from "./single-gap";
 
-export function Plan(): void {
+export function Alg1(): void {
 	Model.Instance.reset();
 	const root = CreateGapTreeRoot();
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
