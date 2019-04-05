@@ -8,7 +8,7 @@ import { Cable } from '../model/cable';
 class CablePickerState {
 	public verts: Vertex[];
 	constructor() {
-		this.verts = [Model.Instance.Robots[0], Model.Instance.Robots[1]];
+		this.verts = [];
 	}
 }
 
@@ -31,9 +31,13 @@ export class CablePicker extends React.Component<{}, CablePickerState> {
 	}
 
 	currentVerts(): JSX.Element {
-		return <div>
-		{ this.state.verts.map(this.createCurrentCableElem) }
-		</div>;
+		return (
+			this.state.verts.length === 0 ?
+			<div>EMPTY</div> :
+			<div>
+			{ this.state.verts.map(this.createCurrentCableElem) }
+			</div>
+		);
 	}
 
 	getAllVertices(): JSX.Element[] {
@@ -55,20 +59,20 @@ export class CablePicker extends React.Component<{}, CablePickerState> {
 
 	addVert(v: Vertex): void {
 		const verts = this.state.verts;
-		verts.splice(verts.length - 1, 0, v);
+		verts.splice(verts.length, 0, v);
 		this.setState({ verts });
 	}
 
 	removeVert(ind: number): void {
 		const verts = this.state.verts;
-		if (ind === 0 || ind === verts.length - 1) return;
 		verts.splice(ind, 1);
 		this.setState({ verts });
 	}
 
 	componentDidUpdate(prevProps: {}, prevState: CablePickerState): void {
 		if (Model.Instance.CablePath) Model.Instance.CablePath.remove();
-		Model.Instance.CablePath = Cable.CreateFromVerts(this.state.verts);
+		Model.Instance.CablePath = Cable.CreateFromVerts([Model.Instance.Robots[0], ...this.state.verts, Model.Instance.Robots[1]]);
+		Model.Instance.CableVerts = this.state.verts;
 	}
 
 	render() {
