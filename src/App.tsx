@@ -6,8 +6,9 @@ import { Viewer } from './viewer/viewer';
 import { InputArea } from './ui/input-area';
 import Theme from './ui/theme';
 import { Header } from './ui/header';
-import { Plan } from './planner/algorithm';
+import { Alg1 } from './planner/algorithm';
 import Model from './model/model-service';
+import { Alg2 } from './planner/algorithm2';
 
 export class AppSteps {
 	0 = "Initial Configuration";
@@ -48,7 +49,7 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	simulate(): void {
-		window.setTimeout(Plan, 10);
+		window.setTimeout(Alg2, 10);
 	}
 
 	getStepper(): JSX.Element {

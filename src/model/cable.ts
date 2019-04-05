@@ -2,9 +2,10 @@ import { fabric } from 'fabric';
 import { Entity } from "./entity";
 import { GapTreeNode } from "../ds/gap-tree";
 import Model from './model-service';
+import { GapTreePairNode } from '../ds/gap-tree-pair';
 
 const STROKE_WIDTH = 4;
-const CABLE_COLOR = "GoldenRod";
+const CABLE_COLOR = "DarkGreen";
 
 /**
  * This uses a hack for rendering a single shape
@@ -14,8 +15,8 @@ export class Cable extends Entity {
 	/**
 	 * @param solution Solution to R1, we obtain solution to R0 ourselves in here
 	 */
-	constructor(public solution: GapTreeNode) {
-		super(`cable`, CABLE_COLOR, new fabric.Polygon(Cable.CreateFabricPointArray(solution), {
+	private constructor(public solution: fabric.Point[]) {
+		super(`cable`, CABLE_COLOR, new fabric.Polygon(solution, {
 			fill: CABLE_COLOR,
 		}), true);
 	}
@@ -23,15 +24,15 @@ export class Cable extends Entity {
 	/**
 	 * @param solution Solution to R1
 	 */
-	private static CreateFabricPointArray(solution: GapTreeNode): fabric.Point[] {
+	private static CreateFabricPointArrayFromGapTreeNode(solution: GapTreeNode): fabric.Point[] {
 		// we start from R1 and then append R0 to the other end
 		let oneWay: fabric.Point[] = [Model.Instance.Robots[1].Destination!.location];
 		const points: fabric.Point[] = [];
 		let section: fabric.Point[];
-		section = Cable.CreateFabricPointArrayForOneRobot(solution);
+		section = Cable.CreateFabricPointArrayForOneRobotGTN(solution);
 		oneWay = oneWay.concat(section);
 		// we need to reverse R0 section before appending to the other section
-		section = Cable.CreateFabricPointArrayForOneRobot(solution.parent).reverse();
+		section = Cable.CreateFabricPointArrayForOneRobotGTN(solution.parent).reverse();
 		oneWay = oneWay.concat(section);
 		// Now we append R0
 		oneWay.push(Model.Instance.Robots[0].Destination!.location);
@@ -44,7 +45,7 @@ export class Cable extends Entity {
 		return points;
 	}
 
-	private static CreateFabricPointArrayForOneRobot(solution: GapTreeNode | undefined): fabric.Point[] {
+	private static CreateFabricPointArrayForOneRobotGTN(solution: GapTreeNode | undefined): fabric.Point[] {
 		const oneWay: fabric.Point[] = [];
 		while (solution) {
 			if (solution.anchor) {
@@ -55,5 +56,49 @@ export class Cable extends Entity {
 			solution = solution.parent;
 		}
 		return oneWay;
+	}
+
+	public static CreateFromGapTreeNode(solution: GapTreeNode): Cable {
+		return new Cable(this.CreateFabricPointArrayFromGapTreeNode(solution));
+	}
+
+	/**
+	 * @param solution Solution to R1
+	 */
+	private static CreateFabricPointArrayFromGapTreePairNode(solution: GapTreePairNode): fabric.Point[] {
+		// we start from R1 and then append R0 to the other end
+		let oneWay: fabric.Point[] = [Model.Instance.Robots[1].Destination!.location];
+		const points: fabric.Point[] = [];
+		let section: fabric.Point[];
+		section = Cable.CreateFabricPointArrayForOneRobotGTPN(solution, false);
+		oneWay = oneWay.concat(section);
+		// we need to reverse R0 section before appending to the other section
+		section = Cable.CreateFabricPointArrayForOneRobotGTPN(solution, true).reverse();
+		oneWay = oneWay.concat(section);
+		// Now we append R0
+		oneWay.push(Model.Instance.Robots[0].Destination!.location);
+		for (let i = 0; i < oneWay.length; i++) {
+			points.push(oneWay[i]);
+		}
+		for (let i = oneWay.length - 1; i >= 0; i--) {
+			points.push(new fabric.Point(oneWay[i].x + STROKE_WIDTH, oneWay[i].y + STROKE_WIDTH));
+		}
+		return points;
+	}
+
+	private static CreateFabricPointArrayForOneRobotGTPN(solution: GapTreePairNode | undefined, isFirst: boolean): fabric.Point[] {
+		const oneWay: fabric.Point[] = [];
+		while (solution) {
+			const anchor = isFirst ? solution.val.first.anchor : solution.val.second.anchor;
+			if (anchor) {
+				oneWay.push(anchor.location);
+			}
+			solution = solution.parent;
+		}
+		return oneWay;
+	}
+
+	public static CreateFromGapTreePairNode(solution: GapTreePairNode): Cable {
+		return new Cable(this.CreateFabricPointArrayFromGapTreePairNode(solution));
 	}
 }
