@@ -5,6 +5,7 @@ import { GapTreeNode } from "../ds/gap-tree";
 import { PrintDebug } from "../utils/debug";
 import { CanAnchorFromVertices as CanAnchorFromVertices } from "./anchoring";
 import { LabeledGap } from "./labeled-gap";
+import { GapTreePairNode } from "../ds/gap-tree-pair";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
@@ -192,5 +193,17 @@ export function MakeGapTreeNodes(gapPairs: GapPairs, parent: GapTreeNode): void 
 			if (!parent.addChild(gtn)) return;
 		}
 		gtn.addChild(new GapTreeNode(gapPair.second, gapPair.second.anchor));
+	});
+}
+
+export function MakeGapTreePairNodes(gapPairs: GapPairs, parent: GapTreePairNode): void {
+	// we are both staying then we shouldn't only one of us at a time should wait
+	gapPairs.forEach((gapPair) => {
+		// So here is the tricky part, when we are adding the Tree Nodes we are in R1
+		// So parent.parent is R0 and is associated with first
+		// This if is here so both robot don't stay at the same location forever because that has the lowest cost+H
+		if (gapPair.first.eq(parent.val.first) && gapPair.second.eq(parent.val.second)) return;
+
+		parent.addChild(new GapTreePairNode(gapPair));
 	});
 }

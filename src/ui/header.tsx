@@ -16,8 +16,8 @@ export class Header extends React.Component {
 					<div className="subheader">
 						<sub>
 							v {pkg.version}
-							<br/>
-							By Reza Teshnizi
+							{/* <br/>
+							By Reza Teshnizi */}
 						</sub>
 					</div>
 				</header>
