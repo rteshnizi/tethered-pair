@@ -19,11 +19,11 @@ export function Alg1(): void {
 	if (Model.Instance.foundSolution()) {
 		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), { level: DEBUG_LEVEL.L3 });
 		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), { level: DEBUG_LEVEL.L3 });
-		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
-		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = Path.CreateFromGapTreeNode(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
+		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = Path.CreateFromGapTreeNode(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
 		// This solution contains information about both parts of the cable
 		// We just need to traverse it right
-		Model.Instance.CablePath = new Cable(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+		Model.Instance.CablePath = Cable.CreateFromGapTreeNode(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
 	} else {
 		Renderer.Instance.render(true);
 		PrintDebug("No Solutions", { level: DEBUG_LEVEL.L3 });

@@ -28,6 +28,25 @@ export default class Model {
 	public ITERATION = 0;
 	// @ts-ignore Assigned in reset()
 	public simulationInfo: SimulationInfo;
+
+	/** Use addSolutions() to update solutions */
+	// @ts-ignore Assigned in reset()
+	public Solutions2: GapTreePairNode | null;
+
+	public addSolutions2(node: GapTreePairNode): void {
+		const currentMax = this.Solutions2 ? this.Solutions2.cost.max : NaN;
+		if (!currentMax || node.cost.max < currentMax) {
+			PrintDebug(`Minimized Max Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
+			this.Solutions2 = node;
+		} else if (currentMax && node.cost.max === currentMax) {
+			const currentMin = this.Solutions2!.cost.min;
+			if (!currentMin || node.cost.min < currentMin) {
+				PrintDebug(`Max is the same.. Minimized Min Solution (#${this.ITERATION})`, { level: DEBUG_LEVEL.L3 });
+				this.Solutions2 = node;
+			}
+		}
+	}
+
 	/** Use addSolutions() to update solutions */
 	// @ts-ignore Assigned in reset()
 	public Solutions: SolutionPair;
@@ -256,6 +275,7 @@ export default class Model {
 		this.CablePath = undefined;
 		this.SolutionPaths = {};
 		this.Solutions = {};
+		this.Solutions2 = null;
 		this.ITERATION = 0;
 	}
 }

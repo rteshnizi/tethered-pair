@@ -21,14 +21,13 @@ export function Alg2(): void {
 	Model.Instance.Robots[0].location = origin1;
 	Model.Instance.Robots[1].location = origin2;
 	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, { level: DEBUG_LEVEL.L3 });
-	if (Model.Instance.foundSolution()) {
-		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[0].name].pathString(), { level: DEBUG_LEVEL.L3 });
-		PrintDebug(Model.Instance.Solutions[Model.Instance.Robots[1].name].pathString(), { level: DEBUG_LEVEL.L3 });
-		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[0].name]);
-		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = new Path(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+	if (Model.Instance.Solutions2) {
+		PrintDebug(Model.Instance.Solutions2.pathString(), { level: DEBUG_LEVEL.L3 });
+		Model.Instance.SolutionPaths[Model.Instance.Robots[0].name] = Path.CreateFromGapTreePairNode(Model.Instance.Solutions2, true);
+		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = Path.CreateFromGapTreePairNode(Model.Instance.Solutions2, false);
 		// This solution contains information about both parts of the cable
 		// We just need to traverse it right
-		Model.Instance.CablePath = new Cable(Model.Instance.Solutions[Model.Instance.Robots[1].name]);
+		Model.Instance.CablePath = Cable.CreateFromGapTreePairNode(Model.Instance.Solutions2);
 	} else {
 		Renderer.Instance.render(true);
 		PrintDebug("No Solutions", { level: DEBUG_LEVEL.L3 });
@@ -59,8 +58,7 @@ function Visit(node: GapTreePairNode): void {
 	if (node.isAtDestination()) {
 		PrintDebug("----------------------", { level: DEBUG_LEVEL.L2 });
 		PrintDebug(`S -> ${node.pathString()}`, { level: DEBUG_LEVEL.L2 });
-		// @ts-ignore if they are both at destination then parent is not undefined
-		Model.Instance.addSolutions(node, node.parent);
+		Model.Instance.addSolutions2(node);
 		return;
 	}
 	PrintDebug("----------------------");
