@@ -34,3 +34,11 @@ export function CreateFabricPoint(val: string): fabric.Point | null {
 export function GetFabricPointFromVertex(v: EntityWithLocation | fabric.Point): fabric.Point {
 	return(v as fabric.Point).scalarAdd ? (v as fabric.Point) : (v as EntityWithLocation).location
 }
+
+export function GetFabricPointsFromVertexArray(verts: EntityWithLocation[]): fabric.Point[] {
+	const pts: fabric.Point[] = [];
+	for (const v of verts) {
+		pts.push(GetFabricPointFromVertex(v));
+	}
+	return pts;
+}

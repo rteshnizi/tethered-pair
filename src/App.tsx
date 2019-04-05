@@ -40,6 +40,9 @@ class App extends React.Component<{}, AppState> {
 			case 1:
 				this.setState({ activeStep: 2 })
 				break;
+			case 2:
+				this.setState({ activeStep: 3 })
+				break;
 			default:
 				break;
 		}
@@ -70,7 +73,7 @@ class App extends React.Component<{}, AppState> {
 	}
 
 	nextStepBtnCallback(): void {
-		if (this.state.activeStep < 2) {
+		if (this.state.activeStep < 3) {
 			this.nextStep();
 		} else {
 			this.simulate();
@@ -79,7 +82,7 @@ class App extends React.Component<{}, AppState> {
 
 	readyToSimulate(): boolean {
 		return (
-			this.state.activeStep < 2 ||
+			this.state.activeStep < 3 ||
 			(
 				!!Model.Instance.Robots[0].Destination &&
 				!!Model.Instance.Robots[1].Destination
@@ -99,7 +102,7 @@ class App extends React.Component<{}, AppState> {
 					disabled={!this.readyToSimulate()}
 					onClick={this.nextStepBtnCallback}
 					>
-						{this.state.activeStep < 2 ? "Next Step" : "Simulate"}
+						{this.state.activeStep < 3 ? "Next Step" : "Simulate"}
 				</Mui.Button>
 			</div>
 		);
