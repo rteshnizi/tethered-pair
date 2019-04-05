@@ -4,6 +4,7 @@ import { BindMemberMethods } from '../utils/react';
 import { InitialConfig } from './initial-config';
 import { DestinationPicker } from './destination-picker';
 import { SimulationInfo } from './simulation-info';
+import { CablePicker } from './cable-picker';
 
 interface InputAreaProps {
 	activeStep: keyof AppSteps;
@@ -25,6 +26,8 @@ export class InputArea extends React.Component<InputAreaProps, InputState> {
 				return <InitialConfig />;
 			case 1:
 				return <DestinationPicker />;
+			case 2:
+				return <CablePicker />;
 			default:
 				return <SimulationInfo />
 		}

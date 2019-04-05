@@ -69,6 +69,25 @@ code {
 	min-width: 100px !important;
 }
 
+.cable-picker {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 16px;
+	color: aliceblue;
+}
+
+.cable-picker-elem {
+	padding: 2px 15px;
+	margin: 2px 0px;
+}
+
+.cable-picker-elem:hover {
+	border-color: maroon;
+	border-width: 1px;
+	border-style: dotted;
+	cursor: pointer;
+	/* padding: 2px 15px; */
+}
+
 .simulation-info {
 	font-family: 'Courier New', Courier, monospace;
 	font-size: 16px;

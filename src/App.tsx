@@ -13,7 +13,8 @@ import { Alg2 } from './planner/algorithm2';
 export class AppSteps {
 	0 = "Initial Configuration";
 	1 = "Pick Destination";
-	2 = "Simulate";
+	2 = "Cable";
+	3 = "Simulate";
 }
 
 interface AppState {

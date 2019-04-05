@@ -49,7 +49,7 @@ export class DestinationPicker extends React.Component<{}, InputState> {
 					className="preset-select"
 					inputProps={{ name: 'preset', id: 'preset-select' }}
 					onChange={(e) => { this.setState({ jsonState: e.target.value }); }}
-				>
+					>
 					{
 						AllPresets.map((preset, ind) => <Mui.MenuItem key={`sel-item-${ind}`} value={preset.json}>{preset.name}</Mui.MenuItem>)
 					}
@@ -80,7 +80,7 @@ export class DestinationPicker extends React.Component<{}, InputState> {
 		);
 	}
 
-setDestination(ind: 0 | 1): void {
+	setDestination(ind: 0 | 1): void {
 		const center = CreateFabricPoint(this.state.destinations[ind]);
 		const r = Model.Instance.Robots[ind];
 		if (center) {
