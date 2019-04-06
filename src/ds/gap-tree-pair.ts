@@ -4,6 +4,7 @@ import * as Anchoring from "../planner/anchoring";
 import { PriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";
 import { GapPair } from "../planner/gap-pairs";
+import { Geometry } from "../utils/geometry";
 
 class Costs {
 	constructor(public first: number, public second: number) {}
@@ -159,17 +160,26 @@ export class GapTreePairNode {
 				ind += step;
 			}
 		}
-		while (ind + step < child.cableVerts.length && ind + step >= 0) {
+		while (ind + step < child.cableVerts.length && ind + step >= 0 && ind < child.cableVerts.length && ind >= 0) {
 			if (Anchoring.ShouldPop(vert, child.cableVerts[ind], child.cableVerts[ind + step])) {
-				child.popAnchor(ind);
+				child.popAnchor(ind, isFirst);
+			} else {
+				ind += step;
 			}
-			ind += step;
 		}
 		return pushed;
 	}
 
-	private popAnchor(ind: number) {
-		this.cableVerts.splice(ind, 1);
+	private popAnchor(ind: number, isFirst: boolean) {
+		const popped = this.cableVerts.splice(ind, 1)[0];
+		// const gap = isFirst ? this.val.first.gap : this.val.second.gap;
+		// const result = Geometry.IsPolygonEmpty([gap, ]);
+		// if (result.state === IsPolygonEmptyState.NotEmpty) continue;
+		// result.innerPermissibleVerts.forEach((p) => {
+		// 	// if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
+		// 	if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
+		// 	}
+		// }
 	}
 
 	private pushAnchorIfNeeded(child: LabeledGap, isFirst: boolean): boolean {

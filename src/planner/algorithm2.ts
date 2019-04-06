@@ -14,7 +14,6 @@ export function Alg2(): void {
 	const root = CreateRoot();
 	PrintDebug(`Init Cable = ${root.consumedCable}`, { level: DEBUG_LEVEL.L3 });
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
-	// window.requestAnimationFrame(DFSVisitLayer.bind(window, root));
 	Model.Instance.openSet.push(root);
 	const origin1 = Model.Instance.Robots[0].location;
 	const origin2 = Model.Instance.Robots[1].location;
