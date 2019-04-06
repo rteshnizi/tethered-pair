@@ -75,7 +75,10 @@ export class Robot extends Vertex {
 	}
 
 	public myVertex(): Vertex | undefined {
-		return Model.Instance.getVertexByLocation(this.location);
+		let result = Model.Instance.getVertexByLocation(this.location);
+		if (result) return result;
+		if (this.Destination && this.location.eq(this.Destination.location)) return this.Destination;
+		return this;
 	}
 
 	public addVertToVisited(v: Vertex): void {

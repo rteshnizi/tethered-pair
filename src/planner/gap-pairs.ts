@@ -82,11 +82,11 @@ export function GetGapPairs(): Map<string, GapPair> {
 					// Anchor the current gaps to the anchor and next time it will be single gap problem
 					possibleAnchors.push(p);
 					let tmpV: Vertex | undefined;
-					tmpV = Model.Instance.getVertexByLocation(r0.location);
+					tmpV = r0.myVertex();
 					if (tmpV) {
 						l1 = new LabeledGap(tmpV, r0, p);
 					}
-					tmpV = Model.Instance.getVertexByLocation(r1.location);
+					tmpV = r1.myVertex();
 					if (tmpV) {
 						l2 = new LabeledGap(tmpV, r1, p);
 					}

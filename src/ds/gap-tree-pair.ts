@@ -20,6 +20,10 @@ export class GapTreePairNode {
 
 	/** cableVerts[0] is closest to R0 and cableVert[length -1] is closest to R1 */
 	public cableVerts: Vertex[];
+	/** cableVert closest to R0 */
+	public get firstCableVert(): Vertex { return this.cableVerts[0]; };
+	/** cableVert closest to R1 */
+	public get lastCableVert(): Vertex { return this.cableVerts[this.cableVerts.length - 1]; };
 
 	private _parent?: GapTreePairNode;
 	public get parent(): GapTreePairNode | undefined { return this._parent; }
@@ -35,6 +39,15 @@ export class GapTreePairNode {
 	private _consumedCable: number;
 	/** From the first anchor on the other end up to my anchor */
 	public get consumedCable(): number { return this._consumedCable; }
+
+	public get isStaying(): boolean[] {
+		return [
+			// @ts-ignore eq has wrong type def
+			this.val.first.gap.location.eq(this.val.first.robot.location) as boolean,
+			// @ts-ignore eq has wrong type def
+			this.val.second.gap.location.eq(this.val.second.robot.location) as boolean,
+		];
+	}
 
 	/**
 	 * @param val Node Val
@@ -54,25 +67,25 @@ export class GapTreePairNode {
 		this.updateConsumedCable();
 	}
 
-	public addChild(node: GapTreePairNode): boolean {
+	public addChild(child: GapTreePairNode): boolean {
 		// if (this.parent) {
 		// 	if (!this.checkAnchor(node.val.first, this.parent.val.first)) return false;
 		// 	if (!this.checkAnchor(node.val.second, this.parent.val.second)) return false;
 		// }
-		this.checkAnchor2(node);
+		this.checkAnchor2(child);
 
 		// const cableCheck = this.thereIsNotEnoughCable(node);
 		// if (cableCheck.thereIsNotEnoughCable) return false;
-		if (node.thereIsNotEnoughCable2()) return false;
+		if (child.thereIsNotEnoughCable2()) return false;
 
 		// Not Interested in path longer than current solution
-		if (this.costIsHigherThanMaxCost(node)) return false;
+		if (this.costIsHigherThanMaxCost(child)) return false;
 
-		this._children.set(node.toString(), node);
-		node._parent = this;
+		this._children.set(child.toString(), child);
+		child._parent = this;
 		// node._consumedCable = this.consumedCable + cableCheck.c2;
-		if (this.parent) node._depth = this.parent.depth + 1;
-		node.updateCost();
+		if (this.parent) child._depth = this.parent.depth + 1;
+		child.updateCost();
 		return true;
 	}
 
@@ -81,8 +94,8 @@ export class GapTreePairNode {
 		if (this.cableVerts.length === 0) {
 			return this.val.first.gap.location.distanceFrom(this.val.second.gap.location) > Model.Instance.CableLength;
 		}
-		const r0End = this.cableVerts[0].location.distanceFrom(this.val.first.gap.location);
-		const r1End = this.cableVerts[this.cableVerts.length - 1].location.distanceFrom(this.val.second.gap.location);
+		const r0End = this.firstCableVert.location.distanceFrom(this.val.first.gap.location);
+		const r1End = this.lastCableVert.location.distanceFrom(this.val.second.gap.location);
 		return r0End + r1End > Model.Instance.CableLength;
 	}
 
@@ -117,8 +130,8 @@ export class GapTreePairNode {
 		// Special case
 		if (!pushed && child.cableVerts.length === 1) {
 			if (Anchoring.ShouldPop(child.val.first.gap, child.cableVerts[0], child.val.second.gap)) {
-				child.val.first.anchor = undefined;
-				child.val.second.anchor = undefined;
+				// child.val.first.anchor = undefined;
+				// child.val.second.anchor = undefined;
 				child.cableVerts = [];
 			}
 		}
@@ -139,18 +152,19 @@ export class GapTreePairNode {
 		let vert = labeledGap.gap;
 		if (isFirst) {
 			step = +1;
+			ind = 0;
 			// let me try to explain it
 			// if I pushed I should start checking for pops from the last anchor before the pushed one
 			// if I didn't I should begin with the gap I am chasing
 			if (pushed) {
-				vert = child.cableVerts[0];
+				vert = child.firstCableVert;
 				ind += step;
 			}
 		} else {
 			step = -1;
 			ind = child.cableVerts.length - 1;
 			if (pushed) {
-				vert = child.cableVerts[child.cableVerts.length - 1];
+				vert = child.lastCableVert;
 				ind += step;
 			}
 		}
@@ -170,7 +184,7 @@ export class GapTreePairNode {
 	private pushAnchorIfNeeded(child: LabeledGap, isFirst: boolean): boolean {
 		let prevAnchor: Vertex | undefined = undefined;
 		if (this.cableVerts.length > 0) {
-			prevAnchor = isFirst ? this.cableVerts[0] : this.cableVerts[this.cableVerts.length - 1];
+			prevAnchor = isFirst ? this.firstCableVert : this.lastCableVert;
 		}
 
 		if (child.anchor) {
@@ -264,12 +278,20 @@ export class GapTreePairNode {
 		return `(#${this.cost.first.toFixed(3)}) -> ${str1}\n(#${this.cost.second.toFixed(3)}) -> ${str2}\n`;
 	}
 
-	public heuristic(labeledGap: LabeledGap): number {
-		return this.heuristic1(labeledGap);
+	public heuristic(): number[] {
+		return this.heuristic2();
 	}
 
-	private heuristic1(labeledGap: LabeledGap): number {
-		return labeledGap.gap.location.distanceFrom(labeledGap.robot.Destination!.location);
+	private heuristic1(): number[] {
+		return [
+			this.val.first.gap.location.distanceFrom(this.val.first.robot.Destination!.location),
+			this.val.second.gap.location.distanceFrom(this.val.second.robot.Destination!.location),
+		];
+	}
+
+	private heuristic2(): number[] {
+		const h = this.heuristic1();
+		return h.map((h) => 1.5 * h);
 	}
 
 	// public toLongString(): string {
@@ -287,8 +309,12 @@ export function GtnpCostComparator(n1: GapTreePairNode, n2: GapTreePairNode): bo
 
 /** Lowest Cost+H First */
 export function GtnpAStarComparator(n1: GapTreePairNode, n2: GapTreePairNode): boolean {
-	const c1 = Math.max(n1.cost.first + n1.heuristic(n1.val.first), n1.cost.second + n1.heuristic(n1.val.second));
-	const c2 = Math.max(n2.cost.first + n2.heuristic(n2.val.first), n2.cost.second + n2.heuristic(n2.val.second));
+	let h = n1.heuristic();
+	const c1 = Math.max(n1.cost.first + h[0], n1.cost.second + h[1]);
+	h = n2.heuristic();
+	const c2 = Math.max(n2.cost.first + h[0], n2.cost.second + h[1]);
+	// const c1 = Math.max(n1.cost.first + n1.heuristic(n1.val.first), n1.cost.second + n1.heuristic(n1.val.second));
+	// const c2 = Math.max(n2.cost.first + n2.heuristic(n2.val.first), n2.cost.second + n2.heuristic(n2.val.second));
 	return c1 < c2;
 }
 

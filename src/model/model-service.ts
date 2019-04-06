@@ -233,8 +233,6 @@ export default class Model {
 		for (const v of this.Vertices) {
 			if (p.eq(v.location)) return v;
 		}
-		if (p.eq(this.Robots[0].location)) return this.Robots[0];
-		if (p.eq(this.Robots[1].location)) return this.Robots[1];
 		return undefined;
 	}
 

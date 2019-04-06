@@ -72,9 +72,9 @@ function Visit(node: GapTreePairNode): void {
 	// that's the shortest way
 	// We should also try anchoring, if previous gap chasings have caused an anchor
 	// THEY MUST HAVE ANCHORS AT THE SAME TIME. THAT'S THE WHOLE POINT
-	if (node.val.first.anchor && node.val.second.anchor) {
-		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.first.robot, node.val.first.anchor);
-		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.second.robot, node.val.second.anchor);
+	if (node.cableVerts.length > 0) {
+		const r0Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.first.robot, node.firstCableVert);
+		const r1Gaps = SingleGapFuncs.CreateLabeledGaps(node.val.second.robot, node.lastCableVert);
 		SingleGapFuncs.MakeGapTreePairNodes(r0Gaps, r1Gaps, node);
 	} else {
 		const gapPairs = GapPairFuncs.GetGapPairs();
