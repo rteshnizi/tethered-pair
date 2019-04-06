@@ -134,7 +134,7 @@ export class Geometry {
 	}
 
 	/** Uses Model.Instance */
-	public static IsPolygonEmpty(polygonVerts: fabric.Point[], permissibleVerts: Vertex[]): IsPolygonEmptyResult {
+	public static IsPolygonEmpty(polygonVerts: fabric.Point[]): IsPolygonEmptyResult {
 		const poly = Fabric2Pts.PolygonFabricPoints(polygonVerts);
 		const isAPolygonVertex = (v: fabric.Point) => {
 			// @ts-ignore @types is wrong for these functions
@@ -142,16 +142,16 @@ export class Geometry {
 				return v.eq(p);
 			});
 		}
-		const r = {
+		const r: IsPolygonEmptyResult = {
 			state: IsPolygonEmptyState.Empty,
-			vertices: [],
+			innerPermissibleVerts: [],
 		};
 		for (let i = 0; i < Model.Instance.Vertices.length; i++) {
 			const vert = Model.Instance.Vertices[i];
 			if (isAPolygonVertex(vert.location)) continue;
 			if (Polygon.hasIntersectPoint(poly, Fabric2Pts.Pt(vert.location))) {
 				if (vert.isGlobalAnchor) {
-					permissibleVerts.push(vert);
+					r.innerPermissibleVerts.push(vert);
 					if(r.state !== IsPolygonEmptyState.NotEmpty) {
 						r.state = IsPolygonEmptyState.OnlyPermissibleVerts;
 					}
@@ -162,11 +162,16 @@ export class Geometry {
 		}
 		return r;
 	}
+
+	public static GetProjectionVect(lineStart: Vertex, lineEnd: Vertex, pt: Vertex): fabric.Point {
+		const line = Fabric2Pts.Line(new VertexPair(lineStart, lineEnd));
+		return Pts2Fabric.Point(Line.perpendicularFromPt(line, Fabric2Pts.Pt(pt.location), true));
+	}
 }
 
 interface IsPolygonEmptyResult {
 	state: IsPolygonEmptyState,
-	vertices: Vertex[],
+	innerPermissibleVerts: Vertex[],
 }
 
 export enum IsPolygonEmptyState {

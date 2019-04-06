@@ -73,11 +73,10 @@ export function GetGapPairs(): Map<string, GapPair> {
 			// 	if (possibleAnchors.length === 0) continue;
 			// }
 			const verts = [r0.location, g1.location, g2.location, r1.location];
-			const innerVerts: Vertex[] = [];
-			const result = Geometry.IsPolygonEmpty(verts, innerVerts);
-			PrintDebug(innerVerts);
+			const result = Geometry.IsPolygonEmpty(verts);
+			PrintDebug(result.innerPermissibleVerts);
 			if (result.state === IsPolygonEmptyState.NotEmpty) continue;
-			innerVerts.forEach((p) => {
+			result.innerPermissibleVerts.forEach((p) => {
 				// if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
 				if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
 					// Anchor the current gaps to the anchor and next time it will be single gap problem

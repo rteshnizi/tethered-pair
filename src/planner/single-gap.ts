@@ -12,22 +12,8 @@ export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[
 	const gaps: LabeledGap[] = [];
 	r.findGaps(false);
 	for (const g1 of r.gaps) {
-		// if (GapPairExists(pairs, l1, l2)) continue;
 		const possibleAnchors: Vertex[] = [];
-		// const visResult: VisibilityResult[] = [];
-		// if (!previousAnchor.isVisible(g1, visResult)) {
-		// 	for (const vis of visResult) {
-		// 		vis.edges.forEach((ps) => {
-		// 			// Both my previous anchor and the next gap should be able to see the anchor if the robot wants to anchor around it
-		// 			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1, r], ps.v1)) possibleAnchors.push(ps.v1);
-		// 			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1, r], ps.v2)) possibleAnchors.push(ps.v2);
-		// 		});
-		// 	}
-		// 	// If the previous anchor can't see the gap AND there are no possible anchors, this is not a gap to chase
-		// 	if (possibleAnchors.length === 0) continue;
-		// }
 		const verts = [previousAnchor.location, r.location, g1.location];
-		const innerVerts: Vertex[] = [];
 		// Special case of anchoring around the current gap
 		// If I am standing at a gap and I can all the other things are setup right, I should consider anchoring around this gap
 		const v = r.myVertex();
@@ -36,10 +22,10 @@ export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[
 		}
 
 		// general case of looking for other possible anchors
-		const result = Geometry.IsPolygonEmpty(verts, innerVerts);
-		PrintDebug(innerVerts);
+		const result = Geometry.IsPolygonEmpty(verts);
+		PrintDebug(result.innerPermissibleVerts);
 		if (result.state === IsPolygonEmptyState.NotEmpty) continue;
-		innerVerts.forEach((p) => {
+		result.innerPermissibleVerts.forEach((p) => {
 			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1, r], p)) possibleAnchors.push(p);
 		});
 		if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
@@ -69,6 +55,7 @@ export function MakeGapTreeNodes(r0Gaps: LabeledGap[], r1Gaps: LabeledGap[], par
 	}
 }
 
+/** When we add the child, we check for pops in there! */
 export function MakeGapTreePairNodes(r0Gaps: LabeledGap[], r1Gaps: LabeledGap[], parent: GapTreePairNode): void {
 	// Add the tree nodes for R0 under the R1 Parent and keep them
 	// Then add the ones for R1

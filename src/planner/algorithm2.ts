@@ -28,7 +28,7 @@ export function Alg2(): void {
 		Model.Instance.SolutionPaths[Model.Instance.Robots[1].name] = Path.CreateFromGapTreePairNode(Model.Instance.Solutions2, false);
 		// This solution contains information about both parts of the cable
 		// We just need to traverse it right
-		Model.Instance.CablePath = Cable.CreateFromGapTreePairNode(Model.Instance.Solutions2);
+		Model.Instance.CablePath = Cable.CreateFromVerts(Model.Instance.Solutions2.cableVerts);
 	} else {
 		Renderer.Instance.render(true);
 		PrintDebug("No Solutions", { level: DEBUG_LEVEL.L3 });

@@ -27,6 +27,7 @@ export class VertexPair {
 	constructor(public v1: Vertex, public v2: Vertex) {}
 }
 
+/** The obstacle and corresponding edges that are blocking visibility */
 export interface VisibilityResult {
 	obstacle: Obstacle;
 	edges: VertexPair[];

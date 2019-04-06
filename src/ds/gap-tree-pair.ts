@@ -1,5 +1,6 @@
 import { LabeledGap } from "../planner/labeled-gap";
 import Model from "../model/model-service";
+import * as Anchoring from "../planner/anchoring";
 import { PriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";
 import { GapPair } from "../planner/gap-pairs";
@@ -17,6 +18,7 @@ export class GapTreePairNode {
 		return Array.from(this._children.values());
 	}
 
+	/** cableVerts[0] is closest to R0 and cableVert[length -1] is closest to R1 */
 	public cableVerts: Vertex[];
 
 	private _parent?: GapTreePairNode;
@@ -49,53 +51,42 @@ export class GapTreePairNode {
 				this.cableVerts.push(v);
 			}
 		}
-		for (let i = 0; i < this.cableVerts.length - 1; i++) {
-			this._consumedCable += this.cableVerts[i].location.distanceFrom(this.cableVerts[i + 1].location);
-		}
+		this.updateConsumedCable();
 	}
 
 	public addChild(node: GapTreePairNode): boolean {
-		if (this.parent) {
-			if (!this.checkAnchor(node.val.first, this.parent.val.first)) return false;
-			if (!this.checkAnchor(node.val.second, this.parent.val.second)) return false;
-		}
+		// if (this.parent) {
+		// 	if (!this.checkAnchor(node.val.first, this.parent.val.first)) return false;
+		// 	if (!this.checkAnchor(node.val.second, this.parent.val.second)) return false;
+		// }
+		this.checkAnchor2(node);
 
-		const cableCheck = this.thereIsNotEnoughCable(node);
-		if (cableCheck.thereIsNotEnoughCable) return false;
+		// const cableCheck = this.thereIsNotEnoughCable(node);
+		// if (cableCheck.thereIsNotEnoughCable) return false;
+		if (node.thereIsNotEnoughCable2()) return false;
 
 		// Not Interested in path longer than current solution
 		if (this.costIsHigherThanMaxCost(node)) return false;
 
 		this._children.set(node.toString(), node);
 		node._parent = this;
-		node._consumedCable = this.consumedCable + cableCheck.c2;
+		// node._consumedCable = this.consumedCable + cableCheck.c2;
 		if (this.parent) node._depth = this.parent.depth + 1;
 		node.updateCost();
 		return true;
-		// // Before Adding this child just check the global node map
-		// // If the node exists with a higher cost just update the parent and cost.
-		// let current = Model.Instance.GlobalGapTreeMap.get(node.toString());
-		// if (!current) {
-		// 	Model.Instance.GlobalGapTreeMap.set(node.toString(), node);
-		// 	this._children.set(node.toString(), node);
-		// 	node._parent = this;
-		// 	node.updateCost();
-		// 	return;
-		// }
-		// if (!this.parent) return;
-		// // If changing parent would reduce cost, then update the parent
-		// // (Remember that the node alternate robots, so to calculate the cost for current robot I have to check this.parent)
-		// if (current.cost > this.parent.cost + this.parent.val.gap.location.distanceFrom(node.val.gap.location)) {
-		// 	if (current.parent) {
-		// 		current.parent._children.delete(current.toString());
-		// 	}
-		// 	current._parent = this;
-		// 	this._children.set(node.toString(), node);
-		// 	current.updateCost();
-		// }
 	}
 
-	thereIsNotEnoughCable(node: GapTreePairNode): CableCheckResult {
+	private thereIsNotEnoughCable2(): boolean {
+		this.updateConsumedCable();
+		if (this.cableVerts.length === 0) {
+			return this.val.first.gap.location.distanceFrom(this.val.second.gap.location) > Model.Instance.CableLength;
+		}
+		const r0End = this.cableVerts[0].location.distanceFrom(this.val.first.gap.location);
+		const r1End = this.cableVerts[this.cableVerts.length - 1].location.distanceFrom(this.val.second.gap.location);
+		return r0End + r1End > Model.Instance.CableLength;
+	}
+
+	private thereIsNotEnoughCable(node: GapTreePairNode): CableCheckResult {
 		const c1 = this.cableNeededFromAnchorToGap(node);
 		const c2 = this.cableNeededFromTheirAnchorToNextAnchorsOnTheCable(node);
 		if (c1 + c2 + this.consumedCable > Model.Instance.CableLength) {
@@ -111,6 +102,83 @@ export class GapTreePairNode {
 			const c2 = this.parent.cost.second + this.parent.val.second.gap.location.distanceFrom(node.val.second.gap.location);
 			const max = Math.max(c1, c2);
 			return (maxSolution.cost < max);
+		}
+		return false;
+	}
+
+	/** Verify cable configuration */
+	private checkAnchor2(child: GapTreePairNode): void {
+		for (const v of this.cableVerts) {
+			child.cableVerts.push(v);
+		}
+		this.fixAnchors(child, true);
+		this.fixAnchors(child, false);
+		// Special case
+		if (child.cableVerts.length === 1) {
+			if (Anchoring.ShouldPop(child.val.first.gap, child.cableVerts[0], child.val.second.gap)) {
+				child.val.first.anchor = undefined;
+				child.val.second.anchor = undefined;
+				child.cableVerts = [];
+			}
+		}
+	}
+
+	private fixAnchors(child: GapTreePairNode, isFirst: boolean): void {
+		const labeledGap = isFirst ? child.val.first : child.val.second;
+		const pushed = this.pushAnchorIfNeeded(labeledGap, isFirst);
+		if (child.cableVerts.length === 0) return;
+		// special case of last anchor
+		// We fix this outside
+		if (child.cableVerts.length === 1) return;
+
+		// The logic here gets a bit messy
+		// This all for making sure we are not pushing and popping
+		let ind = 0;
+		let step = +1;
+		let vert = labeledGap.gap;
+		if (isFirst) {
+			step = +1;
+			// let me try to explain it
+			// if I pushed I should start checking for pops from the last anchor before the pushed one
+			// if I didn't I should begin with the gap I am chasing
+			if (pushed) {
+				vert = child.cableVerts[0];
+				ind += step;
+			}
+		} else {
+			step = -1;
+			ind = child.cableVerts.length - 1;
+			if (pushed) {
+				vert = child.cableVerts[child.cableVerts.length - 1];
+				ind += step;
+			}
+		}
+		while (ind + step < child.cableVerts.length && ind + step >= 0) {
+			if (Anchoring.ShouldPop(vert, child.cableVerts[ind], child.cableVerts[ind + step])) {
+				child.popAnchor(ind);
+			}
+			ind += step;
+		}
+	}
+
+	private popAnchor(ind: number) {
+		this.cableVerts.splice(ind, 1);
+	}
+
+	private pushAnchorIfNeeded(child: LabeledGap, isFirst: boolean): boolean {
+		let prevAnchor: Vertex | undefined = undefined;
+		if (this.cableVerts.length > 0) {
+			prevAnchor = isFirst ? this.cableVerts[0] : this.cableVerts[this.cableVerts.length - 1];
+		}
+
+		if (child.anchor) {
+			if (prevAnchor && child.anchor.name === prevAnchor.name) return false;
+			if (isFirst) {
+				this.cableVerts.splice(0, 0, child.anchor);
+			} else {
+				this.cableVerts.push(child.anchor);
+			}
+			return true;
 		}
 		return false;
 	}
@@ -173,6 +241,13 @@ export class GapTreePairNode {
 		const c1 = this.parent.cost.first + this.parent.val.first.gap.location.distanceFrom(this.val.first.gap.location);
 		const c2 = this.parent.cost.second + this.parent.val.second.gap.location.distanceFrom(this.val.second.gap.location);
 		this._cost = new Costs(c1, c2);
+	}
+
+	private updateConsumedCable(): void {
+		if (this.cableVerts.length < 2) return;
+		for (let i = 0; i < this.cableVerts.length - 1; i++) {
+			this._consumedCable += this.cableVerts[i].location.distanceFrom(this.cableVerts[i + 1].location);
+		}
 	}
 
 	public pathString(): string {
