@@ -111,10 +111,11 @@ export class GapTreePairNode {
 		for (const v of this.cableVerts) {
 			child.cableVerts.push(v);
 		}
-		this.fixAnchors(child, true);
-		this.fixAnchors(child, false);
+		let pushed = false;
+		pushed = pushed || this.fixAnchors(child, true);
+		pushed = pushed || this.fixAnchors(child, false);
 		// Special case
-		if (child.cableVerts.length === 1) {
+		if (!pushed && child.cableVerts.length === 1) {
 			if (Anchoring.ShouldPop(child.val.first.gap, child.cableVerts[0], child.val.second.gap)) {
 				child.val.first.anchor = undefined;
 				child.val.second.anchor = undefined;
@@ -123,13 +124,13 @@ export class GapTreePairNode {
 		}
 	}
 
-	private fixAnchors(child: GapTreePairNode, isFirst: boolean): void {
+	private fixAnchors(child: GapTreePairNode, isFirst: boolean): boolean {
 		const labeledGap = isFirst ? child.val.first : child.val.second;
-		const pushed = this.pushAnchorIfNeeded(labeledGap, isFirst);
-		if (child.cableVerts.length === 0) return;
+		const pushed = child.pushAnchorIfNeeded(labeledGap, isFirst);
+		if (child.cableVerts.length === 0) return pushed;
 		// special case of last anchor
 		// We fix this outside
-		if (child.cableVerts.length === 1) return;
+		if (child.cableVerts.length === 1) return pushed;
 
 		// The logic here gets a bit messy
 		// This all for making sure we are not pushing and popping
@@ -159,6 +160,7 @@ export class GapTreePairNode {
 			}
 			ind += step;
 		}
+		return pushed;
 	}
 
 	private popAnchor(ind: number) {
