@@ -1,6 +1,6 @@
 import * as GapPairFuncs from "./gap-pairs";
 import Model from "../model/model-service";
-import { VertexVisitState } from "../model/vertex";
+import { VertexVisitState, Vertex } from "../model/vertex";
 import { Path } from "../model/path";
 import { PrintDebug, DEBUG_LEVEL } from "../utils/debug";
 import Renderer from "../viewer/renderer-service";
@@ -12,6 +12,7 @@ import { GapTreePairNode } from "../ds/gap-tree-pair";
 export function Alg2(): void {
 	Model.Instance.reset();
 	const root = CreateRoot();
+	PrintDebug(`Init Cable = ${root.consumedCable}`, { level: DEBUG_LEVEL.L3 });
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
 	// window.requestAnimationFrame(DFSVisitLayer.bind(window, root));
 	Model.Instance.openSet.push(root);
@@ -83,9 +84,16 @@ function Visit(node: GapTreePairNode): void {
 }
 
 function CreateRoot(): GapTreePairNode {
-	const l1 = new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0], undefined);
-	const l2 = new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1], undefined);
+	let anchor0: Vertex | undefined = undefined;
+	let anchor1: Vertex | undefined = undefined;
+	const l = Model.Instance.InitialCableVerts.length;
+	if (l > 0) {
+		anchor0 = Model.Instance.InitialCableVerts[0];
+		anchor1 = Model.Instance.InitialCableVerts[l - 1];
+	}
+	const l1 = new LabeledGap(Model.Instance.Robots[0], Model.Instance.Robots[0], anchor0);
+	const l2 = new LabeledGap(Model.Instance.Robots[1], Model.Instance.Robots[1], anchor1);
 	const g = new GapPairFuncs.GapPair(l1, l2);
-	const root = new GapTreePairNode(g);
+	const root = new GapTreePairNode(g, Model.Instance.InitialCableVerts);
 	return root;
 }

@@ -17,6 +17,8 @@ export class GapTreePairNode {
 		return Array.from(this._children.values());
 	}
 
+	public cableVerts: Vertex[];
+
 	private _parent?: GapTreePairNode;
 	public get parent(): GapTreePairNode | undefined { return this._parent; }
 
@@ -30,13 +32,26 @@ export class GapTreePairNode {
 	/** From the first anchor on the other end up to my anchor */
 	private _consumedCable: number;
 	/** From the first anchor on the other end up to my anchor */
-	private get consumedCable(): number { return this._consumedCable; }
+	public get consumedCable(): number { return this._consumedCable; }
 
-	constructor(public val: GapPair) {
+	/**
+	 * @param val Node Val
+	 * @param cableVerts Only used for root, Other nodes will figure it out on their own.
+	 */
+	constructor(public val: GapPair, cableVerts?: Vertex[]) {
 		this._children = new Map();
 		this._cost = new Costs(0, 0);
 		this._depth = 0;
 		this._consumedCable = 0;
+		this.cableVerts = [];
+		if (cableVerts) {
+			for (const v of cableVerts) {
+				this.cableVerts.push(v);
+			}
+		}
+		for (let i = 0; i < this.cableVerts.length - 1; i++) {
+			this._consumedCable += this.cableVerts[i].location.distanceFrom(this.cableVerts[i + 1].location);
+		}
 	}
 
 	public addChild(node: GapTreePairNode): boolean {

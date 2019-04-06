@@ -72,7 +72,7 @@ export class CablePicker extends React.Component<{}, CablePickerState> {
 	componentDidUpdate(prevProps: {}, prevState: CablePickerState): void {
 		if (Model.Instance.CablePath) Model.Instance.CablePath.remove();
 		Model.Instance.CablePath = Cable.CreateFromVerts([Model.Instance.Robots[0], ...this.state.verts, Model.Instance.Robots[1]]);
-		Model.Instance.CableVerts = this.state.verts;
+		Model.Instance.InitialCableVerts = this.state.verts;
 	}
 
 	render() {

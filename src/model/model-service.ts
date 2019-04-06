@@ -151,7 +151,7 @@ export default class Model {
 	public SolutionPaths: Paths;
 	public CablePath: Cable | undefined;
 	/** Vertices of the cable excluding the two robots */
-	public CableVerts: Vertex[];
+	public InitialCableVerts: Vertex[];
 
 	private _cableLength: number;
 	public set CableLength(l: number) { this._cableLength = l; }
@@ -202,7 +202,7 @@ export default class Model {
 		this.vertices = null;
 		this.AllEntities = new Map();
 		this.anchorsMap = new Set();
-		this.CableVerts = [];
+		this.InitialCableVerts = [];
 		this.reset();
 	}
 
