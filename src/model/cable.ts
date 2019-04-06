@@ -68,40 +68,6 @@ export class Cable extends Entity {
 		return new Cable(this.CreateFabricPointArrayFromGapTreeNode(solution));
 	}
 
-	/**
-	 * @param solution Solution to R1
-	 */
-	private static CreateFabricPointArrayFromGapTreePairNode(solution: GapTreePairNode): fabric.Point[] {
-		// we start from R1 and then append R0 to the other end
-		let oneWay: fabric.Point[] = [Model.Instance.Robots[1].Destination!.location];
-		const points: fabric.Point[] = [];
-		let section: fabric.Point[];
-		section = Cable.CreateFabricPointArrayForOneRobotGTPN(solution, false);
-		oneWay = oneWay.concat(section);
-		// we need to reverse R0 section before appending to the other section
-		section = Cable.CreateFabricPointArrayForOneRobotGTPN(solution, true).reverse();
-		oneWay = oneWay.concat(section);
-		// Now we append R0
-		oneWay.push(Model.Instance.Robots[0].Destination!.location);
-		return this.createCablePoints(oneWay);
-	}
-
-	private static CreateFabricPointArrayForOneRobotGTPN(solution: GapTreePairNode | undefined, isFirst: boolean): fabric.Point[] {
-		const oneWay: fabric.Point[] = [];
-		while (solution) {
-			const anchor = isFirst ? solution.val.first.anchor : solution.val.second.anchor;
-			if (anchor) {
-				oneWay.push(anchor.location);
-			}
-			solution = solution.parent;
-		}
-		return oneWay;
-	}
-
-	public static CreateFromGapTreePairNode(solution: GapTreePairNode): Cable {
-		return new Cable(this.CreateFabricPointArrayFromGapTreePairNode(solution));
-	}
-
 	public static CreateFromVerts(verts: Vertex[]) {
 		return new Cable(this.createCablePoints(FabricUtils.GetFabricPointsFromVertexArray(verts)));
 	}

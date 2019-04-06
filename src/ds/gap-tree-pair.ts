@@ -99,15 +99,6 @@ export class GapTreePairNode {
 		return r0End + r1End > Model.Instance.CableLength;
 	}
 
-	private thereIsNotEnoughCable(node: GapTreePairNode): CableCheckResult {
-		const c1 = this.cableNeededFromAnchorToGap(node);
-		const c2 = this.cableNeededFromTheirAnchorToNextAnchorsOnTheCable(node);
-		if (c1 + c2 + this.consumedCable > Model.Instance.CableLength) {
-			return { c1, c2, thereIsNotEnoughCable: true };
-		}
-		return { c1, c2, thereIsNotEnoughCable: false };
-	}
-
 	private costIsHigherThanMaxCost(node: GapTreePairNode): boolean {
 		const maxSolution = Model.Instance.getMaxSolution();
 		if (this.parent && maxSolution) {
@@ -197,45 +188,6 @@ export class GapTreePairNode {
 			return true;
 		}
 		return false;
-	}
-
-	private checkAnchor(labeledGap: LabeledGap, parent: LabeledGap): boolean {
-		// FIXME: This might change for the bottom field because we might need this tree node for popping
-		// I actually think this is okay, I just need to add the logic for popping in here
-		// But since I don't have the logic, I am preventing it for now.
-		// In the case of consecutive push and pops the fact that that is extra cost will prevent such a node to be chosen
-		if (labeledGap.anchor && parent.anchor) {
-			if (labeledGap.gap.location.eq(labeledGap.anchor.location) && labeledGap.anchor.name === parent.anchor.name) {
-				return false; // This should be updated to popping. read above
-			}
-		}
-		return true;
-	}
-
-	private cableNeededFromAnchorToGapPerRobot(labeledGap: LabeledGap): number {
-		if (!labeledGap.anchor) return 0;
-		const cableNeededForThisStep = labeledGap.anchor.location.distanceFrom(labeledGap.gap.location);
-		return cableNeededForThisStep;
-	}
-
-	private cableNeededFromAnchorToGap(node: GapTreePairNode): number {
-		const c1 = this.cableNeededFromAnchorToGapPerRobot(node.val.first);
-		const c2 = this.cableNeededFromAnchorToGapPerRobot(node.val.second);
-		return c1 + c2;
-	}
-
-	private cableNeededFromTheirAnchorToNextAnchorsOnTheCablePerRobot(labeledGap: LabeledGap, parent: LabeledGap): number {
-		if (!labeledGap.anchor) return 0;
-		if (!parent.anchor) return 0;
-		const cableNeededUpToAnchor = labeledGap.anchor.location.distanceFrom(parent.anchor.location);
-		return cableNeededUpToAnchor;
-	}
-
-	private cableNeededFromTheirAnchorToNextAnchorsOnTheCable(node: GapTreePairNode): number {
-		if (!this.parent) return 0;
-		const c1 = this.cableNeededFromTheirAnchorToNextAnchorsOnTheCablePerRobot(node.val.first, this.parent.val.first);
-		const c2 = this.cableNeededFromTheirAnchorToNextAnchorsOnTheCablePerRobot(node.val.second, this.parent.val.second);
-		return c1 + c2;
 	}
 
 	public isChild(gap: LabeledGap): GapTreePairNode | undefined {
