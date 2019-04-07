@@ -37,8 +37,8 @@ function AStar(): void {
 	while (Model.Instance.ITERATION !== Model.Instance.CONSTANTS.ITERATION_LIMIT && !Model.Instance.openSet.isEmpty()) {
 		Model.Instance.ITERATION++;
 		node = Model.Instance.openSet.pop();
-		node.val.first.robot.location = node.val.first.gap.location;
-		node.val.second.robot.location = node.val.second.gap.location;
+		node.val.first.robot.location = Model.Instance.getVertexLocationByName(node.val.first.gap.name);
+		node.val.second.robot.location = Model.Instance.getVertexLocationByName(node.val.second.gap.name);
 		// Eliminates cycles in the paths
 		node.val.first.gap.setVisitState(node.val.first.robot, VertexVisitState.VISITING);
 		node.val.second.gap.setVisitState(node.val.second.robot, VertexVisitState.VISITING);

@@ -21,6 +21,7 @@ export class Robot extends Vertex {
 			this._destination.remove();
 		}
 		this._destination = d;
+		Model.Instance.VertLocationByName.set(d!.name, d!.location);
 	}
 	public get Destination(): Destination | null { return this._destination; }
 

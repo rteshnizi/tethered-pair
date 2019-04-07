@@ -6,6 +6,7 @@ import { PrintDebug } from "../utils/debug";
 import { CanAnchorFromVertices as CanAnchorFromVertices } from "./anchoring";
 import { LabeledGap } from "./labeled-gap";
 import { GapTreePairNode } from "../ds/gap-tree-pair";
+import * as FabricUtils from "../utils/fabric";
 
 /** String is the key obtain by calling `MakeGapPairName()` or `GapPair.toString()` */
 export type GapPairs = Map<string, GapPair>;
@@ -72,13 +73,14 @@ export function GetGapPairs(): Map<string, GapPair> {
 			// 	// If the gaps can't see each other AND there are no possible anchors, then they are not compatible
 			// 	if (possibleAnchors.length === 0) continue;
 			// }
-			const verts = [r0.location, g1.location, g2.location, r1.location];
-			const result = Geometry.IsPolygonEmpty(verts);
+			const verts = [r0, g1, g2, r1];
+			const result = Geometry.IsPolygonEmpty(FabricUtils.GetFabricPointsFromVertexArray(verts));
 			PrintDebug(result.innerPermissibleVerts);
 			if (result.state === IsPolygonEmptyState.NotEmpty) continue;
 			result.innerPermissibleVerts.forEach((p) => {
 				// if (CanAnchorFromVertexPair(g1, g2, p) && CanAnchorFromVertexPair(r0, r1, p)) possibleAnchors.push(p);
-				if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
+				if (CanAnchorFromVertices(verts, p)) {
+				// if (CanAnchorFromVertices([g1, g2, r0, r1], p)) {
 					// Anchor the current gaps to the anchor and next time it will be single gap problem
 					possibleAnchors.push(p);
 					let tmpV: Vertex | undefined;

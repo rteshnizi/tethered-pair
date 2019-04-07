@@ -19,6 +19,25 @@ export function CanAnchorFromVertices(verts: Vertex[], target: Vertex): boolean 
 	return true;
 }
 
+/**
+ * Whether both gaps and the robot can see the target anchor
+ * @param verts
+ * @param possibleAnchor The vertex we are checking for possible anchoring
+ */
+export function CanAnchorFromVerticesSingle(prevAnchor: Vertex, src: Vertex, dst: Vertex, possibleAnchor: Vertex): boolean {
+	// fast check
+	// If the target is not a global anchor then we should not use it for planning anyway
+	if (!possibleAnchor.isGlobalAnchor) return false;
+	const verts = [prevAnchor, src, dst, possibleAnchor];
+	// slow check
+	for (const v of verts) {
+		if (!isAbsolutelyVisible(v, possibleAnchor)) return false;
+	}
+	const result = Geometry.IsPolygonEmpty(FabricUtils.GetFabricPointsFromVertexArray(verts));
+	if (result.state !== IsPolygonEmptyState.Empty) return false;
+	return true;
+}
+
 export function ShouldPop(v1: Vertex, anchorToPop: Vertex, v2: Vertex): boolean {
 	const result = Geometry.IsPolygonEmpty(FabricUtils.GetFabricPointsFromVertexArray([v1, v2, anchorToPop]));
 	if (result.state !== IsPolygonEmptyState.Empty) return false;

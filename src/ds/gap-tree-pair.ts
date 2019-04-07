@@ -11,6 +11,8 @@ class Costs {
 	constructor(public first: number, public second: number) {}
 	public get max(): number { return Math.max(this.first, this.second); }
 	public get min(): number { return Math.min(this.first, this.second); }
+	public get maxInd(): number { return this.first > this.second ? 0 : 1; }
+	public get minInd(): number { return this.first < this.second ? 0 : 1; }
 };
 
 export class GapTreePairNode {
@@ -85,7 +87,7 @@ export class GapTreePairNode {
 		if (child.thereIsNotEnoughCable2()) return false;
 
 		// Not Interested in path longer than current solution
-		if (child.costIsHigherThanMaxCost()) return false;
+		if (child.potentialCostIsHigherThanMaxCost()) return false;
 
 		this._children.set(child.toString(), child);
 		// node._consumedCable = this.consumedCable + cableCheck.c2;
@@ -106,6 +108,14 @@ export class GapTreePairNode {
 		if (Model.Instance.Solutions2) {
 			const maxSolution = Model.Instance.Solutions2.cost.max;
 			return (maxSolution < this.cost.max);
+		}
+		return false;
+	}
+
+	private potentialCostIsHigherThanMaxCost(): boolean {
+		if (Model.Instance.Solutions2) {
+			const maxSolution = Model.Instance.Solutions2.cost.max;
+			return (maxSolution < this.cost.max + this.heuristic()[this.cost.maxInd]);
 		}
 		return false;
 	}
@@ -225,7 +235,7 @@ export class GapTreePairNode {
 		return b1 && b2;
 	}
 
-	/** Update the cost of this node and all its decedents recursively. */
+	/** Update the cost of this node using parent's cost. */
 	private updateCost() {
 		if (!this.parent) return;
 		// There is a bug since we move tha actual robot during the algorithm
