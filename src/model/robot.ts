@@ -21,6 +21,7 @@ export class Robot extends Vertex {
 			this._destination.remove();
 		}
 		this._destination = d;
+		Model.Instance.VertLocationByName.set(d!.name, d!.location);
 	}
 	public get Destination(): Destination | null { return this._destination; }
 
@@ -74,7 +75,7 @@ export class Robot extends Vertex {
 		Model.Instance.getVerticesInBoundingBox().forEach(checkGap);
 	}
 
-	public myVertex(): Vertex | undefined {
+	public myVertex(): Vertex {
 		let result = Model.Instance.getVertexByLocation(this.location);
 		if (result) return result;
 		if (this.Destination && this.location.eq(this.Destination.location)) return this.Destination;

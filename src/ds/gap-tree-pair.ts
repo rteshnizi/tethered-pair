@@ -5,11 +5,14 @@ import { PriorityQueue } from "./priority-queue";
 import { Vertex } from "../model/vertex";
 import { GapPair } from "../planner/gap-pairs";
 import { Geometry } from "../utils/geometry";
+import { Robot } from "../model/robot";
 
 class Costs {
 	constructor(public first: number, public second: number) {}
 	public get max(): number { return Math.max(this.first, this.second); }
 	public get min(): number { return Math.min(this.first, this.second); }
+	public get maxInd(): number { return this.first > this.second ? 0 : 1; }
+	public get minInd(): number { return this.first < this.second ? 0 : 1; }
 };
 
 export class GapTreePairNode {
@@ -73,6 +76,10 @@ export class GapTreePairNode {
 		// 	if (!this.checkAnchor(node.val.first, this.parent.val.first)) return false;
 		// 	if (!this.checkAnchor(node.val.second, this.parent.val.second)) return false;
 		// }
+		child._parent = this;
+		if (this.parent) child._depth = this.parent.depth + 1;
+		child.updateCost();
+
 		this.checkAnchor2(child);
 
 		// const cableCheck = this.thereIsNotEnoughCable(node);
@@ -80,13 +87,10 @@ export class GapTreePairNode {
 		if (child.thereIsNotEnoughCable2()) return false;
 
 		// Not Interested in path longer than current solution
-		if (this.costIsHigherThanMaxCost(child)) return false;
+		if (child.potentialCostIsHigherThanMaxCost()) return false;
 
 		this._children.set(child.toString(), child);
-		child._parent = this;
 		// node._consumedCable = this.consumedCable + cableCheck.c2;
-		if (this.parent) child._depth = this.parent.depth + 1;
-		child.updateCost();
 		return true;
 	}
 
@@ -100,13 +104,18 @@ export class GapTreePairNode {
 		return r0End + r1End > Model.Instance.CableLength;
 	}
 
-	private costIsHigherThanMaxCost(node: GapTreePairNode): boolean {
-		const maxSolution = Model.Instance.getMaxSolution();
-		if (this.parent && maxSolution) {
-			const c1 = this.parent.cost.first + this.parent.val.first.gap.location.distanceFrom(node.val.first.gap.location);
-			const c2 = this.parent.cost.second + this.parent.val.second.gap.location.distanceFrom(node.val.second.gap.location);
-			const max = Math.max(c1, c2);
-			return (maxSolution.cost < max);
+	private costIsHigherThanMaxCost(): boolean {
+		if (Model.Instance.Solutions2) {
+			const maxSolution = Model.Instance.Solutions2.cost.max;
+			return (maxSolution < this.cost.max);
+		}
+		return false;
+	}
+
+	private potentialCostIsHigherThanMaxCost(): boolean {
+		if (Model.Instance.Solutions2) {
+			const maxSolution = Model.Instance.Solutions2.cost.max;
+			return (maxSolution < this.cost.max + this.heuristic()[this.cost.maxInd]);
 		}
 		return false;
 	}
@@ -117,8 +126,8 @@ export class GapTreePairNode {
 			child.cableVerts.push(v);
 		}
 		let pushed = false;
-		pushed = pushed || this.fixAnchors(child, true);
-		pushed = pushed || this.fixAnchors(child, false);
+		pushed = pushed || this.fixAnchors2(child, true);
+		pushed = pushed || this.fixAnchors2(child, false);
 		// Special case
 		if (!pushed && child.cableVerts.length === 1) {
 			if (Anchoring.ShouldPop(child.val.first.gap, child.cableVerts[0], child.val.second.gap)) {
@@ -170,8 +179,21 @@ export class GapTreePairNode {
 		return pushed;
 	}
 
-	private popAnchor(ind: number, isFirst: boolean) {
-		const popped = this.cableVerts.splice(ind, 1)[0];
+	private fixAnchors2(child: GapTreePairNode, isFirst: boolean): boolean {
+		const labeledGap = isFirst ? child.val.first : child.val.second;
+		const pushed = child.pushAnchorIfNeeded(labeledGap, isFirst);
+		if (child.cableVerts.length === 0) return pushed;
+		// special case of last anchor
+		// We fix this outside
+		if (child.cableVerts.length === 1) return pushed;
+		if (pushed) return pushed;
+
+		Anchoring.PopAsNeeded(child, this, isFirst);
+		return false;
+	}
+
+	public popAnchor(ind: number, isFirst: boolean): Vertex {
+		return this.cableVerts.splice(ind, 1)[0];
 		// const gap = isFirst ? this.val.first.gap : this.val.second.gap;
 		// const result = Geometry.IsPolygonEmpty([gap, ]);
 		// if (result.state === IsPolygonEmptyState.NotEmpty) continue;
@@ -213,12 +235,20 @@ export class GapTreePairNode {
 		return b1 && b2;
 	}
 
-	/** Update the cost of this node and all its decedents recursively. */
+	/** Update the cost of this node using parent's cost. */
 	private updateCost() {
 		if (!this.parent) return;
-		const c1 = this.parent.cost.first + this.parent.val.first.gap.location.distanceFrom(this.val.first.gap.location);
-		const c2 = this.parent.cost.second + this.parent.val.second.gap.location.distanceFrom(this.val.second.gap.location);
+		// There is a bug since we move tha actual robot during the algorithm
+		// Sometimes once it's at the destination, the cost will be zero
+		// So in order to get around that, we get myVertex when gap is R0 or R1
+		const c1 = this.parent.cost.first + this.costPerRobot(this.parent.val.first.gap, this.val.first.gap, this.val.first.robot, true);
+		const c2 = this.parent.cost.second + this.costPerRobot(this.parent.val.second.gap, this.val.second.gap, this.val.second.robot, false);
 		this._cost = new Costs(c1, c2);
+	}
+
+	private costPerRobot(src: Vertex, dst:Vertex, r: Robot, isFirst: boolean): number {
+		const actualLocation = src.name === r.name ? Model.Instance.origins[isFirst ? 0 : 1] : src.location;
+		return actualLocation.distanceFrom(dst.location);
 	}
 
 	private updateConsumedCable(): void {

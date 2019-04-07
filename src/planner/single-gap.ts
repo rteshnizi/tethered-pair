@@ -18,7 +18,9 @@ export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[
 		// If I am standing at a gap and I can all the other things are setup right, I should consider anchoring around this gap
 		const v = r.myVertex();
 		if (v && v.name !== r.name) {
-			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1], v)) possibleAnchors.push(v);
+			if (Anchoring.CanAnchorFromVerticesSingle(previousAnchor, r, g1, v)) {
+				possibleAnchors.push(v);
+			}
 		}
 
 		// general case of looking for other possible anchors
@@ -26,7 +28,9 @@ export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[
 		PrintDebug(result.innerPermissibleVerts);
 		if (result.state === IsPolygonEmptyState.NotEmpty) continue;
 		result.innerPermissibleVerts.forEach((p) => {
-			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1, r], p)) possibleAnchors.push(p);
+			if (Anchoring.CanAnchorFromVerticesSingle(previousAnchor, r, g1, p)) {
+				possibleAnchors.push(p);
+			}
 		});
 		if (result.state === IsPolygonEmptyState.OnlyPermissibleVerts && possibleAnchors.length === 0) continue;
 		if (possibleAnchors.length > 0) {

@@ -1,3 +1,4 @@
+import { fabric } from 'fabric';
 import { Entity } from "./entity";
 import { Obstacle } from "./obstacle";
 import { Robot } from "./robot";
@@ -13,6 +14,7 @@ import { Cable } from "./cable";
 import { GapTreePairNode, GtnpAStarComparator } from "../ds/gap-tree-pair";
 
 type Robots = { [index: number]: Robot };
+type Origins = { [index: number]: fabric.Point };
 type Obstacles = { [index: number]: Obstacle };
 type Paths = { [robotName: string]: Path };
 type SolutionPair = { [robotName: string]: GapTreeNode };
@@ -115,6 +117,8 @@ export default class Model {
 
 	public AllEntities: Map<string, Entity>;
 
+	public origins: Origins;
+
 	private robots: Robots;
 	public get Robots(): Readonly<Robots> { return this.robots; }
 
@@ -164,12 +168,16 @@ export default class Model {
 		if (!this.vertices) {
 			this.vertices = [];
 			forEach(this.Obstacles, (obs) => {
-				// @ts-ignore we set vertices up there
-				obs.vertices.forEach((vert) => { this.vertices.push(vert); });
+				obs.vertices.forEach((v) => {
+					// @ts-ignore we set vertices up there
+					this.vertices.push(v);
+					this.VertLocationByName.set(v.name, v.location);
+				});
 			});
 		}
 		return this.vertices;
 	}
+	public VertLocationByName: Map<string, fabric.Point>;
 
 	/**
 	 * This method returns the vertices of the obstacles that are inside or partially inside the bounding box
@@ -202,7 +210,12 @@ export default class Model {
 		this.vertices = null;
 		this.AllEntities = new Map();
 		this.anchorsMap = new Set();
+		this.VertLocationByName = new Map();
 		this.InitialCableVerts = [];
+		this.origins = {
+			0: new fabric.Point(0, 0),
+			1: new fabric.Point(0, 0),
+		}
 		this.reset();
 	}
 
@@ -212,6 +225,8 @@ export default class Model {
 			this.robots[ind].remove();
 		}
 		this.robots[ind] = r;
+		this.origins[ind] = r.location;
+		this.VertLocationByName.set(r.name, r.location);
 	}
 
 	/** This method is used when building initial config when user changes size and location of obstacles */
@@ -234,6 +249,11 @@ export default class Model {
 			if (p.eq(v.location)) return v;
 		}
 		return undefined;
+	}
+
+	public getVertexLocationByName(name: string): fabric.Point {
+		let p = this.VertLocationByName.get(name);
+		return !!p ? p : new fabric.Point(0, 0);
 	}
 
 	// public simulationInfoIncreaseTotalNodes(): void {
