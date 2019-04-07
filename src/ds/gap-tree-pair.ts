@@ -79,15 +79,11 @@ export class GapTreePairNode {
 		child._parent = this;
 		if (this.parent) child._depth = this.parent.depth + 1;
 		child.updateCost();
-
-		this.checkAnchor2(child);
-
-		// const cableCheck = this.thereIsNotEnoughCable(node);
-		// if (cableCheck.thereIsNotEnoughCable) return false;
-		if (child.thereIsNotEnoughCable2()) return false;
-
 		// Not Interested in path longer than current solution
 		if (child.potentialCostIsHigherThanMaxCost()) return false;
+
+		this.checkAnchor2(child);
+		if (child.thereIsNotEnoughCable2()) return false;
 
 		this._children.set(child.toString(), child);
 		// node._consumedCable = this.consumedCable + cableCheck.c2;
