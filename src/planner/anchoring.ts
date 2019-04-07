@@ -1,6 +1,7 @@
 import { Vertex, VisibilityResult } from "../model/vertex";
 import { Geometry, IsPolygonEmptyState, Fabric2Pts } from "../utils/geometry";
 import * as FabricUtils from "../utils/fabric";
+import { GapTreePairNode } from "../ds/gap-tree-pair";
 
 /**
  * Whether both gaps and the robot can see the target anchor
@@ -22,6 +23,40 @@ export function ShouldPop(v1: Vertex, anchorToPop: Vertex, v2: Vertex): boolean 
 	const result = Geometry.IsPolygonEmpty(FabricUtils.GetFabricPointsFromVertexArray([v1, v2, anchorToPop]));
 	if (result.state !== IsPolygonEmptyState.Empty) return false;
 	return isAbsolutelyVisible(v1, v2);
+}
+
+export function PopAsNeeded(node: GapTreePairNode, parent: GapTreePairNode, isFirst: boolean): Set<string> | undefined {
+	const targetGap = isFirst ? node.val.first : node.val.second;
+	// TODO: If threw exception, add if statement
+	const originGap = isFirst ? parent.val.first : parent.val.second;
+	if (node.cableVerts.length === 1) {
+		// DON"T KNOW HOW TO HANDLE THIS YET
+		return;
+	} else {
+		const myMove = Fabric2Pts.LineFromPoints(originGap.gap.location, targetGap.gap.location);
+		let ind = 0;
+		let step = +1;
+		if (isFirst) {
+			step = +1;
+			ind = 0;
+		} else {
+			step = -1;
+			ind = node.cableVerts.length - 1;
+		}
+		const popped: Set<string> = new Set();
+		while (ind + step < node.cableVerts.length && ind + step >= 0 && ind < node.cableVerts.length && ind >= 0) {
+			const anchorToPop = node.cableVerts[ind];
+			const prevAnchor = node.cableVerts[ind + step];
+			const bigVect = Geometry.GetHugeVector(prevAnchor, anchorToPop);
+			const stitch = Fabric2Pts.LineFromPoints(prevAnchor.location, anchorToPop.location.add(bigVect));
+			if (Geometry.IntersectPtLines(stitch, myMove)) {
+				popped.add(node.popAnchor(ind, isFirst).name);
+			} else {
+				ind += step;
+			}
+		}
+		return popped;
+	}
 }
 
 // FIXME: This is most definitely buggy.

@@ -18,7 +18,11 @@ export function CreateLabeledGaps(r: Robot, previousAnchor: Vertex): LabeledGap[
 		// If I am standing at a gap and I can all the other things are setup right, I should consider anchoring around this gap
 		const v = r.myVertex();
 		if (v && v.name !== r.name) {
-			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1], v)) possibleAnchors.push(v);
+			if (Anchoring.CanAnchorFromVertices([previousAnchor, g1], v)) {
+				if (!v.isVisible(previousAnchor) || !Geometry.IsPolygonEmpty([previousAnchor.location, v.location, g1.location])) {
+					possibleAnchors.push(v);
+				}
+			}
 		}
 
 		// general case of looking for other possible anchors

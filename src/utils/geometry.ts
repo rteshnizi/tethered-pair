@@ -13,7 +13,10 @@ export type AngledPoint = fabric.Point & { angle?: number };
 
 export class Geometry {
 	/** It's just a very big number */
-	private static HUGE_NUMBER_LOL = 1000000000;
+	private static HUGE_NUMBER_LOL = 100000;
+
+	/** Used for Huge vector (not epsilon) */
+	private static HUGE_VECT_MULTIPLIER = 50;
 
 	// https://stackoverflow.com/a/45662872/750567
 	public static SortPointsClockwise(points: AngledPoint[] | EntityWithLocation[], center?: fabric.Point): void {
@@ -127,8 +130,16 @@ export class Geometry {
 		return end.location.subtract(start.location).divideEquals(Geometry.HUGE_NUMBER_LOL);
 	}
 
+	public static GetHugeVector(start: Vertex, end: Vertex): fabric.Point {
+		return end.location.subtract(start.location).multiplyEquals(Geometry.HUGE_VECT_MULTIPLIER);
+	}
+
 	public static IntersectLines(l1: VertexPair, l2: VertexPair): fabric.Point | undefined {
-		const pt = Line.intersectLine2D(Fabric2Pts.Line(l1), Fabric2Pts.Line(l2));
+		return this.IntersectPtLines(Fabric2Pts.Line(l1), Fabric2Pts.Line(l2));
+	}
+
+	public static IntersectPtLines(l1: Group, l2: Group): fabric.Point | undefined {
+		const pt = Line.intersectLine2D(l1, l2);
 		if (!pt) return undefined;
 		return Pts2Fabric.Point(pt);
 	}
@@ -228,6 +239,13 @@ export class Fabric2Pts {
 		return Group.fromArray([
 			[vPair.v1.location.x, vPair.v1.location.y],
 			[vPair.v2.location.x, vPair.v2.location.y],
+		]);
+	}
+
+	public static LineFromPoints(pt1: fabric.Point, pt2: fabric.Point): Group {
+		return Group.fromArray([
+			[pt1.x, pt1.y],
+			[pt2.x, pt2.y],
 		]);
 	}
 
