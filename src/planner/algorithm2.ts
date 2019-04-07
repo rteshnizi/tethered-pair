@@ -15,11 +15,9 @@ export function Alg2(): void {
 	PrintDebug(`Init Cable = ${root.consumedCable}`, { level: DEBUG_LEVEL.L3 });
 	PrintDebug("################################################### Begin", { level: DEBUG_LEVEL.L3 });
 	Model.Instance.openSet.push(root);
-	const origin1 = Model.Instance.Robots[0].location;
-	const origin2 = Model.Instance.Robots[1].location;
 	AStar();
-	Model.Instance.Robots[0].location = origin1;
-	Model.Instance.Robots[1].location = origin2;
+	Model.Instance.Robots[0].location = Model.Instance.origins[0];
+	Model.Instance.Robots[1].location = Model.Instance.origins[1];
 	PrintDebug(`################################################## ${Model.Instance.ITERATION}`, { level: DEBUG_LEVEL.L3 });
 	if (Model.Instance.Solutions2) {
 		PrintDebug(Model.Instance.Solutions2.pathString(), { level: DEBUG_LEVEL.L3 });
